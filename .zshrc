@@ -79,6 +79,7 @@ PROMPT='%F{8}[%*]%f %(!.%F{red}#.%F{50}§)%f %F{11}${${PWD//$HOME/%F{48\}~}//\~\
 setopt appendhistory # Append to the common history file instead of overwriting it
 setopt autocd # Automatically cd to the given path when it is a valid directory and not a command
 setopt cdsilent # Disable the 'cd to' message when using cd -
+setopt interactivecomments # Allow inline #
 setopt correct # Enable autocorrection
 setopt globdots # Enable dot-prefixed file indexing by default
 setopt histignoredups # Ignore duplicate entries in history
@@ -102,7 +103,10 @@ alias grec="grep --color=auto"
 alias yeet="killall -15"
 alias murder="killall -9"
 
+alias yb="yarn build"
 alias yarn-ddos="yarn docs:dev:only-spaceweb"
+
+alias multicat="tail -n +1"
 
 # git aliases
 function gb() {
@@ -326,7 +330,7 @@ function wheeee() {
   case $project_name in
     spaceweb)
       htr
-      if [[ $force_wheeee -eq 1 ]]; then yarn build; fi
+      if [[ $force_wheeee -eq 1 ]]; then yarn build --scope=spaceweb-themes; fi
       yarn docs:dev:only-spaceweb
     ;;
     sprinklr-app-client)
@@ -365,10 +369,8 @@ function yw() {
   cd $(echo "$workspace_context" | cut -d' ' -f 1)
 }
 
-# Hop To apps/spr-main-Web
-function htw() {
-  yw spr-main-web
-}
+alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
+alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
 
 # Debug VRT
 alias vrt-debug="yarn ts-node internals/vrt/scripts/preVrt.ts && node internals/vrt/scripts/lostPixelCopyFolder.js && node internals/vrt/scripts/lostPixelJson.js && yarn docs:dev:only-spaceweb"
