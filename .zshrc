@@ -103,6 +103,8 @@ alias grec="grep --color=auto"
 alias yeet="killall -15"
 alias murder="killall -9"
 
+alias whew="gco main && gpp && gbc |: && htr && yarn && remap"
+
 alias yb="yarn build"
 alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
@@ -110,7 +112,7 @@ alias multicat="tail -n +1"
 
 # git aliases
 function gb() {
-  git merge-base HEAD "${1:-main}"
+  git merge-base HEAD "${1:-origin/main}"
 }
 alias gbc="git branch | ggrep -vEe '^\\*|main' | xargs git branch -d " # Git Branch Clean
 alias gbC="git branch | ggrep -vEe '^\\*|main' | xargs git branch -D " # Git Branch [C]lean
@@ -538,6 +540,7 @@ function precmd_hydration() {
     LAST_HYDRATION_REMINDER=$current_time
   fi
 }
+
 
 precmd_functions+=(precmd_cmd_timer precmd_vcs_info precmd_hydration)
 preexec_functions+=(preexec_cmd_timer)
