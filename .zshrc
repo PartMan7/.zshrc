@@ -135,6 +135,7 @@ alias gcpa="git cherry-pick --no-commit --strategy=recursive -X theirs" # Git Ch
 function gcr() { # Git Checkout Remote
   git fetch origin "$1"
   git checkout "$1"
+  yarn
 }
 function gd() { # Git Diff
   if [ $# -eq 0 ]; then
@@ -203,6 +204,7 @@ function grr() {
 alias grs='git reset --soft' # Git Reset --Soft
 alias grum='git fetch origin main; git rebase origin/main' # Git Rebase with Updated Main
 alias gs='git status' # Git Status
+alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
 alias gust="git restore --staged ." # Git UnSTage
@@ -322,6 +324,8 @@ function htr() {
     return 1
   fi
 }
+alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
+alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
 
 function wheeee() {
   gr
@@ -372,9 +376,6 @@ function yw() {
   cd $(echo "$workspace_context" | cut -d' ' -f 1)
 }
 
-alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
-alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
-
 # Debug VRT
 alias vrt-debug="yarn ts-node internals/vrt/scripts/preVrt.ts && node internals/vrt/scripts/lostPixelCopyFolder.js && node internals/vrt/scripts/lostPixelJson.js && yarn docs:dev:only-spaceweb"
 
@@ -391,16 +392,24 @@ function ws() {
   fi
 }
 
-# Launch Webstorm in the relevant context
-function cows() {
+# Launch WebStorm in the relevant context
+function webs() {
   get_code_context "$@"
   ws "$CODE_CONTEXT"
 }
 
+# Check Out and WebStorm in the relevant context
+function cows() {
+  get_code_context "$@"
+  cdc "$CODE_CONTEXT"
+  ws
+}
+
 # cd and launch WebStorm
 function setup() {
-  co "$@"
+  co Ref
   ws
+  remap "$@"
 }
 
 # Run the current repository/workspace
