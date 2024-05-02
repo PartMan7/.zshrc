@@ -153,6 +153,7 @@ function gds() { # Git Diff --Stat
 function gdss() { # Git Diff --ShortStat
   gd --shortstat $*
 }
+alias gf="git fetch origin"
 alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc() { # Git Lazy Commit
   htr
@@ -394,6 +395,12 @@ function ws() {
 function cows() {
   get_code_context "$@"
   ws "$CODE_CONTEXT"
+}
+
+# cd and launch WebStorm
+function setup() {
+  co "$@"
+  ws
 }
 
 # Run the current repository/workspace
