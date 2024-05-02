@@ -18,8 +18,7 @@
 
 # PROMPT
 ## Current timestamp (HH:MM:SS)
-## Blue $ for regular shell, red # for administrative shell
-## EDIT: The $ has been replaced with a 🥔 due to a cybercriminal colleague
+## Blue § for regular shell, red # for administrative shell
 ## Lavender relative path to ~/Documents/Code (represented by relative path) if inside a code folder
 ## If not, green relative path to $HOME if inside the user directory
 ## In other cases, yellow absolute path
@@ -73,7 +72,6 @@ zstyle ':vcs_info:*' enable git
 
 # Prompt formatting
 setopt promptsubst
-# PROMPT='%F{8}[%*]%f %(!.%F{red}#.🥔)%f %F{11}${${PWD//$HOME/%F{48\}~}//\~\/$REL_CODE_PATH\//%F{105\}}%f '
 PROMPT='%F{8}[%*]%f %(!.%F{red}#.%F{50}§)%f %F{11}${${PWD//$HOME/%F{48\}~}//\~\/$REL_CODE_PATH\//%F{105\}}%f '
 
 setopt appendhistory # Append to the common history file instead of overwriting it
@@ -162,13 +160,13 @@ function glc() { # Git Lazy Commit
   git commit -m "[SPACE-00] chore: $*" -n
   cd -
 }
-GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|($COLUMNS,trunc)%s%Creset" "--date=format-local:%F %R")
+GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
 alias gl='git -c color.ui=always log $GIT_LOG_FORMAT' # Git Log
 alias gln="$aliases[gl] -n" # Git Log -N
 alias gmm="git fetch origin main; git merge origin/main"
 function gmr() { # Git MR
   local merge_head=$(git merge-base HEAD "origin/${1:-main}")
-  local git_commits=$(git -c color.ui=always -c core.pager= log $GIT_LOG_FORMAT "$merge_head..HEAD")
+  local git_commits=$(git -c color.ui=always -c core.pager= log ${GIT_LOG_FORMAT//-1/$COLUMNS} "$merge_head..HEAD")
   local summary=$(gdss $(git merge-base HEAD main))
   local commit_count=$(echo "$git_commits" | wc -l)
   echo "$commit_count commit(s)"
