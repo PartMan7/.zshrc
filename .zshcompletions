@@ -15,10 +15,8 @@ compdef _git_checkout git checkout
 
 function _yarn() {
 	local -a params
-	params=($(yarn run | ggrep -Eo ': \S+' | tail -r | tail -n +2 | tail -r | gsed 's/: //') add remove workspace)
+	params=($(yarn run | gsed -n '$!{s/..YN0000..//;s/ .*//;p}') add remove workspace)
 	_compskip=all
 	compadd -a params
 }
 compdef _yarn yarn
-
-
