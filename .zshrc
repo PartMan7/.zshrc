@@ -167,7 +167,7 @@ alias gmm="git fetch origin main; git merge origin/main"
 function gmr() { # Git MR
   local merge_head=$(git merge-base HEAD "origin/${1:-main}")
   local git_commits=$(git -c color.ui=always -c core.pager= log ${GIT_LOG_FORMAT//-1/$COLUMNS} "$merge_head..HEAD")
-  local summary=$(gdss $(git merge-base HEAD main))
+  local summary=$(gdss $merge_head)
   local commit_count=$(echo "$git_commits" | wc -l)
   echo "$commit_count commit(s)"
   echo "$summary"
