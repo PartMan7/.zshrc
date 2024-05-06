@@ -1,0 +1,24 @@
+autoload -U compinit
+compinit
+
+function _gco() {
+	local -a params
+	params=($(git branch '--format=%(refname:short)'))
+	_compskip=all
+	compadd -a params
+}
+function _git_checkout() {
+	_gco
+}
+compdef _gco gco
+compdef _git_checkout git checkout
+
+function _yarn() {
+	local -a params
+	params=($(yarn run | ggrep -Eo ': \S+' | tail -r | tail -n +2 | tail -r | gsed 's/: //') add remove workspace)
+	_compskip=all
+	compadd -a params
+}
+compdef _yarn yarn
+
+
