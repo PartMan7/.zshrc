@@ -130,6 +130,10 @@ alias gcm="git checkout main" # Git Checkout Main
 alias gco="git checkout" # Git CheckOut
 alias gcp="git cherry-pick" # Git Cherry-Pick
 alias gcpa="git cherry-pick --no-commit --strategy=recursive -X theirs" # Git Cherry-Pick Aggressive
+function gcpr() {
+  git fetch origin "$@"
+  git cherry-pick "$@"
+}
 function gcr() { # Git Checkout Remote
   git fetch origin "$1"
   git checkout "$1"
@@ -194,6 +198,7 @@ function gqdf() { # Git Quick Diff Filtered
 }
 alias grhcf="git reset --hard; git clean -f" # Git Reset --Hard; git Clean -F
 alias grh="git reset --hard" # Git Reset --Hard
+alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
 function grr() {
   git fetch origin "${1:-main}"
