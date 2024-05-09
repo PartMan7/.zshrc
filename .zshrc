@@ -108,6 +108,10 @@ alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
 alias multicat="tail -n +1"
 
+function js() {
+  node -e "console.log($*)"
+}
+
 # git aliases
 function gb() {
   git merge-base HEAD "${1:-origin/main}"
@@ -126,7 +130,7 @@ function gc() { # Git (chore) Commit
 alias gcam="git commit -am" # Git Commit -AM
 alias gcb="git checkout -b" # Git Checkout -B
 alias gcl="git config --list" # Git Config --List
-alias gcm="git checkout main" # Git Checkout Main
+alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
 alias gco="git checkout" # Git CheckOut
 alias gcp="git cherry-pick" # Git Cherry-Pick
 alias gcpa="git cherry-pick --no-commit --strategy=recursive -X theirs" # Git Cherry-Pick Aggressive
@@ -137,6 +141,7 @@ function gcpr() {
 function gcr() { # Git Checkout Remote
   git fetch origin "$1"
   git checkout "$1"
+  git merge FETCH_HEAD
   yarn
 }
 function gd() { # Git Diff
