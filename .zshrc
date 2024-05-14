@@ -83,6 +83,10 @@ setopt globdots # Enable dot-prefixed file indexing by default
 setopt histignoredups # Ignore duplicate entries in history
 setopt recexact # Don't autocomplete if an exact match is found
 
+ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
+ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
+ASCII_MESSAGES_TSC="\n                                                                                                                                                          \n                                                                                                                                                          \nTTTTTTTTTTTTTTTTTTTTTTT   SSSSSSSSSSSSSSS         CCCCCCCCCCCCC     DDDDDDDDDDDDD             OOOOOOOOO     NNNNNNNN        NNNNNNNNEEEEEEEEEEEEEEEEEEEEEE\nT:::::::::::::::::::::T SS:::::::::::::::S     CCC::::::::::::C     D::::::::::::DDD        OO:::::::::OO   N:::::::N       N::::::NE::::::::::::::::::::E\nT:::::::::::::::::::::TS:::::SSSSSS::::::S   CC:::::::::::::::C     D:::::::::::::::DD    OO:::::::::::::OO N::::::::N      N::::::NE::::::::::::::::::::E\nT:::::TT:::::::TT:::::TS:::::S     SSSSSSS  C:::::CCCCCCCC::::C     DDD:::::DDDDD:::::D  O:::::::OOO:::::::ON:::::::::N     N::::::NEE::::::EEEEEEEEE::::E\nTTTTTT  T:::::T  TTTTTTS:::::S             C:::::C       CCCCCC       D:::::D    D:::::D O::::::O   O::::::ON::::::::::N    N::::::N  E:::::E       EEEEEE\n        T:::::T        S:::::S            C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON:::::::::::N   N::::::N  E:::::E             \n        T:::::T         S::::SSSS         C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON:::::::N::::N  N::::::N  E::::::EEEEEEEEEE   \n        T:::::T          SS::::::SSSSS    C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N N::::N N::::::N  E:::::::::::::::E   \n        T:::::T            SSS::::::::SS  C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N  N::::N:::::::N  E:::::::::::::::E   \n        T:::::T               SSSSSS::::S C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N   N:::::::::::N  E::::::EEEEEEEEEE   \n        T:::::T                    S:::::SC:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N    N::::::::::N  E:::::E             \n        T:::::T                    S:::::S C:::::C       CCCCCC       D:::::D    D:::::D O::::::O   O::::::ON::::::N     N:::::::::N  E:::::E       EEEEEE\n      TT:::::::TT      SSSSSSS     S:::::S  C:::::CCCCCCCC::::C     DDD:::::DDDDD:::::D  O:::::::OOO:::::::ON::::::N      N::::::::NEE::::::EEEEEEEE:::::E\n      T:::::::::T      S::::::SSSSSS:::::S   CC:::::::::::::::C     D:::::::::::::::DD    OO:::::::::::::OO N::::::N       N:::::::NE::::::::::::::::::::E\n      T:::::::::T      S:::::::::::::::SS      CCC::::::::::::C     D::::::::::::DDD        OO:::::::::OO   N::::::N        N::::::NE::::::::::::::::::::E\n      TTTTTTTTTTT       SSSSSSSSSSSSSSS           CCCCCCCCCCCCC     DDDDDDDDDDDDD             OOOOOOOOO     NNNNNNNN         NNNNNNNEEEEEEEEEEEEEEEEEEEEEE\n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n\n"
+
 # Init Ruby Env
 eval "$(rbenv init - zsh)"
 
@@ -101,12 +105,14 @@ alias grec="grep --color=auto"
 alias yeet="killall -15"
 alias murder="killall -9"
 
-alias whew="gco main && gpp && gbc |: && htr && yarn && remap"
+alias whew="gco main && gpp && gbc ||: && htr && yarn && remap"
 
 alias yb="yarn build"
 alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
 alias multicat="tail -n +1"
+
+alias beep='afplay /System/Library/Sounds/Glass.aiff'
 
 function js() {
   node -e "console.log($*)"
@@ -488,7 +494,18 @@ function precmd_cmd_timer() {
     fi
     unset CMD_TIMER
     if [ $CMD_TIMER_STRING ]; then print -P "%F{60}Command executed in %F{62}$CMD_TIMER_STRING%f\n"; fi
+    if ((m > 1)); then beep; fi
+    if [[ "$CMD_ARGS" == *' tsc'* ]]
+    then
+      echo "$ASCII_MESSAGES_TSC"
+    fi
   fi
+}
+
+# Command info
+function preexec_cmd_info() {
+  CMD_ARGS="$1"
+  CMD_PWD=$(pwd)
 }
 
 
@@ -551,9 +568,6 @@ function precmd_vcs_info() {
   if [ $RPROMPT ]; then RPROMPT=" $RPROMPT"; fi
 }
 
-ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
-ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
-
 # Hydration Reminders
 LAST_HYDRATION_REMINDER=$SECONDS
 
@@ -567,7 +581,7 @@ function precmd_hydration() {
 
 
 precmd_functions+=(precmd_cmd_timer precmd_vcs_info precmd_hydration)
-preexec_functions+=(preexec_cmd_timer)
+preexec_functions+=(preexec_cmd_info preexec_cmd_timer)
 
 
 # NVM setup
