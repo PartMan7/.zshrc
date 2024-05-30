@@ -108,6 +108,7 @@ alias murder="killall -9"
 alias whew="gco main && gpp && gbc ||: && htr && yarn && remap"
 
 alias yb="yarn build"
+alias ybt="yarn build --scope=spaceweb-themes"
 alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
 alias multicat="tail -n +1"
@@ -147,7 +148,7 @@ function gcpr() {
 function gcr() { # Git Checkout Remote
   git fetch origin "$1"
   git checkout "$1"
-  git merge FETCH_HEAD
+  git reset --hard FETCH_HEAD
   yarn
 }
 function gd() { # Git Diff
@@ -194,8 +195,8 @@ alias gmrss='gdss $(git merge-base HEAD origin/main)' # Git MR ShortStat
 alias gph="git push origin HEAD" # Git Push origin Head Unsafe
 alias gphf="git push origin HEAD --force-with-lease" # Git Push origin Head Force
 alias gpu="git pull origin HEAD" # Git PUll
-alias gpp="git fetch \$(git-head) && git merge FETCH_HEAD" # Git Pull Partial
-alias gppf="git fetch \$(git-head) && git reset --hard FETCH_HEAD" # Git Pull Partial Forced
+alias gpp="git fetch origin main && git fetch \$(git-head) && git merge FETCH_HEAD" # Git Pull Partial
+alias gppf="git fetch origin main && git fetch \$(git-head) && git reset --hard FETCH_HEAD" # Git Pull Partial Forced
 GIT_SED_COLORIZER='/\x1b\[31m/{/\x1b\[32m/{h};s/^/\x1b[31m/;s/$/\x1b[m/;s/\x1b\[31m\[-/\x1b[m\x1b[41m\x1b[1m/g;s/-]\x1b\[m/\x1b[49m\x1b[31m/g;s/\x1b\[32m[^\x1b]*\+}\x1b\[m//g;p;x};/\x1b\[32m/{s/^/\x1b[32m/;s/$/\x1b[m/;s/\x1b\[32m\{\+/\x1b[m\x1b[42m\x1b[1m/g;s/\+}\x1b\[m/\x1b[49m\x1b[32m/g;s/\x1b\[31m[^\x1b]*-]\x1b\[m//g};/^\x1b\[1m((diff --git)|(index )|(\+{3}))/d;s/^\x1b\[1m-{3} a\//\x1b[1m\x1b[2m/'
 GIT_SED_STRIP_HUNKS='/^--$/{d};/\x1b\[2m/{n};/^\x1b\[((36m@@)|(1m\x1b\[2m))/!{H;$!d;};x;/\x1b\[3[12]m/!d'
 GIT_SED_STRIP_FILENAMES='/\x1b\[2m/!{x;p;d;x;p};/\x1b\[2m/{h}'
@@ -211,6 +212,11 @@ alias grhcf="git reset --hard; git clean -f" # Git Reset --Hard; git Clean -F
 alias grh="git reset --hard" # Git Reset --Hard
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
+function gro() {
+  git fetch origin ${1:-main}
+  git rebase "origin/${1:-main}"
+}
+alias grp='git rev-parse' # Git Rev-Parse
 function grr() {
   git fetch origin "${1:-main}"
   git rebase "origin/${1:-main}"
