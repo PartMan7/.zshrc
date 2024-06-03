@@ -213,8 +213,12 @@ alias grh="git reset --hard" # Git Reset --Hard
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
 function gro() {
+  htr
+  git stash
   git fetch origin ${1:-main}
   git rebase "origin/${1:-main}"
+  git stash pop
+  cd -
 }
 alias grp='git rev-parse' # Git Rev-Parse
 function grr() {
@@ -362,7 +366,11 @@ function wheeee() {
     ;;
     sprinklr-app-client)
       htw
-      if [[ $force_wheeee -eq 1 ]]; then yarn prebuild; fi
+      if [[ $force_wheeee -eq 1 ]]
+      then
+        yarn prenext-dev
+        yarn prebuild
+      fi
       yarn next-dev:only
     ;;
     *)
