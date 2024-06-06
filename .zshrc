@@ -138,10 +138,14 @@ alias gcam="git commit -am" # Git Commit -AM
 alias gcb="git checkout -b" # Git Checkout -B
 alias gcl="git config --list" # Git Config --List
 alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
+function gcpl() { # Git Cherry-Pick List
+  git log --pretty=format:%H --reverse $* | gsed -zE 's/\n/ /g'
+  echo
+}
 alias gco="git checkout" # Git CheckOut
 alias gcp="git cherry-pick" # Git Cherry-Pick
 alias gcpa="git cherry-pick --no-commit --strategy=recursive -X theirs" # Git Cherry-Pick Aggressive
-function gcpr() {
+function gcpr() { # Git Cherry-Pick from Remote
   git fetch origin "$@"
   git cherry-pick "$@"
 }
