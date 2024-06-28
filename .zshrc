@@ -120,7 +120,40 @@ function js() {
 }
 
 # git aliases
-function gb() {
+function g() { # Git sequencer commands
+  local repo_path=$(git rev-parse --git-dir 2>/dev/null)
+  local sequencer_arg=--continue
+  case "$1" in
+    c)
+      local sequencer_arg=--continue
+      ;;
+    s)
+      local sequencer_arg=--skip
+      ;;
+    a|x)
+      local sequencer_arg=--abort
+      ;;
+    q)
+      local sequencer_arg=--quit
+      ;;
+  esac
+
+  if [ -d "${repo_path}/rebase-merge" ]; then
+    git rebase "$sequencer_arg"
+  elif [ -d "${repo_path}/rebase-apply" ]; then
+    git rebase "$sequencer_arg"
+  elif [ -f "${repo_path}/MERGE_HEAD" ]; then
+    git merge "$sequencer_arg"
+  elif [ -f "${repo_path}/CHERRY_PICK_HEAD" ]; then
+    git cherry-pick "$sequencer_arg"
+  elif [ -f "${repo_path}/REVERT_HEAD" ]; then
+    git revert "$sequencer_arg"
+  else
+    echo No sequencer in progress
+  fi
+
+}
+function gb() { # Git Base
   git merge-base HEAD "${1:-origin/main}"
 }
 alias gbc="git branch | ggrep -vEe '^\\*|main' | xargs git branch -d " # Git Branch Clean
