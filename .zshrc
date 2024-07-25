@@ -89,6 +89,8 @@ ASCII_MESSAGES_TSC="\n                                                          
 
 # Init Ruby Env
 eval "$(rbenv init - zsh)"
+# Init Rancher
+export PATH="/Users/parth.mane/.rd/bin:$PATH"
 
 # ls
 alias ls="ls -G --color=auto"
@@ -245,11 +247,15 @@ function gqdf() { # Git Quick Diff Filtered
   unset 'argv[-1]'
   git -c core.whitespace=-trailing-space,-indent-with-non-tab,-tab-in-indent diff --color -w --word-diff-regex='[^[:space:]]' -U1 $* | ggrep -U1 -P "^\\x1b\\[1m-{3}|^\\x1b\\[36m|$GQD_FILTER" | gsed -re "$GIT_SED_COLORIZER" | gsed -re "$GIT_SED_STRIP_HUNKS" | gsed -nre "$GIT_SED_STRIP_FILENAMES"
 }
+function grob() { # Git Rebase On Branch
+  git fetch origin "${1:-main}"
+  git rebase "origin/${1:-main}"
+}
 alias grhcf="git reset --hard; git clean -f" # Git Reset --Hard; git Clean -F
 alias grh="git reset --hard" # Git Reset --Hard
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
-function gro() {
+function gro() { # Git Rebase
   htr
   git stash
   git fetch origin ${1:-main}
@@ -257,11 +263,11 @@ function gro() {
   git stash pop
   cd -
 }
-alias grp='git rev-parse' # Git Rev-Parse
-function grr() {
-  git fetch origin "${1:-main}"
-  git rebase "origin/${1:-main}"
+function gror { # Git Rebase On Rebased
+  git fetch origin "$1"
+  git rebase --onto "origin/$1" "origin/$1@{${2:-1}}"
 }
+alias grp='git rev-parse' # Git Rev-Parse
 alias grs='git reset --soft' # Git Reset --Soft
 alias grum='git fetch origin main; git rebase origin/main' # Git Rebase with Updated Main
 alias gs='git status' # Git Status
