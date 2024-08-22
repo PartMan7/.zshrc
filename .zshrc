@@ -121,6 +121,8 @@ function js() {
   node -e "console.log($*)"
 }
 
+alias git-nohooks='git -c core.hooksPath=/dev/null'
+
 # git aliases
 function g() { # Git sequencer commands
   local repo_path=$(git rev-parse --git-dir 2>/dev/null)
