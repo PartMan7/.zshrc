@@ -255,6 +255,10 @@ function grob() { # Git Rebase On Branch
 }
 alias grhcf="git reset --hard; git clean -f" # Git Reset --Hard; git Clean -F
 alias grh="git reset --hard" # Git Reset --Hard
+function grhr { # Git Reset --Hard on Remote
+  git fetch origin $1
+  git reset --hard FETCH_HEAD
+}
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
 function gro() { # Git Rebase
@@ -436,7 +440,7 @@ function yw() {
     local dir_to_go_to=$(echo "${mapped%:*}" | nocolor)
     local workspace_context="$dir_to_go_to"
   else
-    echo "$mapped" | grep -n '.' | gsed -re 's/^([0-9]:)/ \1/1' -e 's/^/%F{8}/' -e 's/:/: %F{63}/1' -e 's/ ([^ ]+$)/ %F{50}\1/' -e 's/@sprinklrjs\//%F{8}@sprinklrjs%F{50}\//' -e 's/$/%f/' | color
+    echo "$mapped" | grep -n '.' | gsed -re 's/^([0-9]:)/ \1/1' -e 's/^/%F{8}/' -e 's/:/: %F{63}/1' -e 's/ ([^ ]+$)/ %F{50}\1/' -e 's/@sprinklrjs\//%F{8}@sprinklrjs\/%F{50}/' -e 's/$/%f/' | color
     read project_num
     while [ $project_num -a $project_num -gt $number_of_lines -o $project_num -lt 1 ]; do
       echo "Invalid index"
