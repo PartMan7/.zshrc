@@ -97,8 +97,8 @@ export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
 function lc() {
-  if [ -d "$@" ]; then ls -laGh --color=auto $@;
-  elif [ -f "$@" ]; then less -rxf $@;
+  if [ -d "$@" ]; then ls -laGh --color=auto "$@";
+  elif [ -f "$@" ]; then less -rxf "$@";
   else echo "Not found"; return 1
   fi
 }
@@ -169,7 +169,7 @@ alias gbl="git branch" # Git Branch List
 function gc() { # Git (chore) Commit
   htr
   git add .
-  git commit -m "[spaceweb] chore: $*"
+  git commit -m "[$(git-ticket)] chore: $*"
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
@@ -294,7 +294,7 @@ alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm() { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
-  git commit -m "[$(git-ticket)] chore: $@" -n
+  git commit -m "[$(git-ticket)] chore: $*" -n
   git push
   cd -
 }
@@ -318,7 +318,7 @@ alias git-yeet="git reset --hard; git clean -df"
 
 # cd to Code
 function cdc() {
-  if [ $@ ]; then cd "$CODE_PATH/$@"; else cd "$CODE_PATH"; fi
+  if [ $@ ]; then cd "$CODE_PATH/$*"; else cd "$CODE_PATH"; fi
 }
 
 # Color helpers
@@ -478,8 +478,8 @@ function ws() {
     local file_path=(${(s:/:)PWD})
     local src_folder=(${file_path[5]})
     webstorm "$CODE_PATH/$src_folder"
-  elif [ $@ -a -d "$CODE_PATH/$@" ]; then
-    webstorm "$CODE_PATH/$@"
+  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
+    webstorm "$CODE_PATH/$*"
   else
     echo "No valid folder passed"
   fi
