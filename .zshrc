@@ -93,11 +93,12 @@ eval "$(rbenv init - zsh)"
 export PATH="/Users/parth.mane/.rd/bin:$PATH"
 
 # ls
+export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
 function lc() {
   if [ -d "$@" ]; then ls -laGh --color=auto $@;
-  elif [ -f "$@" ]; then less -rf $@;
+  elif [ -f "$@" ]; then less -rxf $@;
   else echo "Not found"; return 1
   fi
 }
@@ -168,7 +169,7 @@ alias gbl="git branch" # Git Branch List
 function gc() { # Git (chore) Commit
   htr
   git add .
-  git commit -m "[SPACE-00] chore: $*"
+  git commit -m "[spaceweb] chore: $*"
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
@@ -214,7 +215,7 @@ alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc() { # Git Lazy Commit
   htr
   git add .
-  git commit -m "[SPACE-00] chore: $*" -n
+  git commit -m "[$(git-ticket)] chore: $*" -n
   cd -
 }
 GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
@@ -293,9 +294,24 @@ alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm() { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
-  git commit -m "[SPACE-00] chore: $@" -n
+  git commit -m "[$(git-ticket)] chore: $@" -n
   git push
   cd -
+}
+function git-ticket() { # Gets ticket from current branch
+  gr
+  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
+  case $project_name in
+    spaceweb)
+      echo 'spaceweb'
+    ;;
+    sprinklr-app-client)
+      git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/' | grep '.' || echo 'SPACE-00'
+    ;;
+    *)
+      echo "SPR-00"
+    ;;
+  esac
 }
 alias git-yeet="git reset --hard; git clean -df"
 
@@ -454,7 +470,7 @@ function yw() {
 }
 
 # Debug VRT
-alias vrt-debug="yarn ts-node internals/vrt/scripts/preVrt.ts && node internals/vrt/scripts/lostPixelCopyFolder.js && node internals/vrt/scripts/lostPixelJson.js && yarn docs:dev:only-spaceweb"
+alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts &&   rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
 
 # Launch WebStorm
 function ws() {
@@ -654,3 +670,10 @@ export NVM_DIR="$HOME/.nvm"
 
 # Command completions
 source ~/.zshcompletions
+
+# bun completions
+[ -s "/Users/parth.mane/.bun/_bun" ] && source "/Users/parth.mane/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
