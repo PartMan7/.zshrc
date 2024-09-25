@@ -188,10 +188,13 @@ function gcpr() { # Git Cherry-Pick from Remote
   git cherry-pick "$@"
 }
 function gcr() { # Git Checkout Remote
+  gcrny "$1"
+  yarn
+}
+function gcrny() { # Git Checkout Remote No Yarn
   git fetch origin "$1"
   git checkout "$1"
   git reset --hard FETCH_HEAD
-  yarn
 }
 function gd() { # Git Diff
   if [ $# -eq 0 ]; then
@@ -215,7 +218,7 @@ alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc() { # Git Lazy Commit
   htr
   git add .
-  git commit -m "[$(git-ticket)] chore: $*" -n
+  git commit -m "[$(git-ticket)] chore: ${*:-Update}" -n
   cd -
 }
 GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
@@ -470,7 +473,7 @@ function yw() {
 }
 
 # Debug VRT
-alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts &&   rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
+alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
 
 # Launch WebStorm
 function ws() {
