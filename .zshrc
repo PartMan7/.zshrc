@@ -119,7 +119,7 @@ alias multicat="tail -n +1"
 alias beep='afplay /System/Library/Sounds/Glass.aiff'
 
 function js() {
-  node -e "console.log($*)"
+  node -p "$*"
 }
 
 alias git-nohooks='git -c core.hooksPath=/dev/null'
@@ -667,9 +667,9 @@ preexec_functions+=(preexec_cmd_info preexec_cmd_timer)
 
 
 # NVM setup
-export NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
+# [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
 
 # Command completions
 source ~/.zshcompletions
