@@ -85,7 +85,6 @@ setopt recexact # Don't autocomplete if an exact match is found
 
 ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
 ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
-ASCII_MESSAGES_TSC="\n                                                                                                                                                          \n                                                                                                                                                          \nTTTTTTTTTTTTTTTTTTTTTTT   SSSSSSSSSSSSSSS         CCCCCCCCCCCCC     DDDDDDDDDDDDD             OOOOOOOOO     NNNNNNNN        NNNNNNNNEEEEEEEEEEEEEEEEEEEEEE\nT:::::::::::::::::::::T SS:::::::::::::::S     CCC::::::::::::C     D::::::::::::DDD        OO:::::::::OO   N:::::::N       N::::::NE::::::::::::::::::::E\nT:::::::::::::::::::::TS:::::SSSSSS::::::S   CC:::::::::::::::C     D:::::::::::::::DD    OO:::::::::::::OO N::::::::N      N::::::NE::::::::::::::::::::E\nT:::::TT:::::::TT:::::TS:::::S     SSSSSSS  C:::::CCCCCCCC::::C     DDD:::::DDDDD:::::D  O:::::::OOO:::::::ON:::::::::N     N::::::NEE::::::EEEEEEEEE::::E\nTTTTTT  T:::::T  TTTTTTS:::::S             C:::::C       CCCCCC       D:::::D    D:::::D O::::::O   O::::::ON::::::::::N    N::::::N  E:::::E       EEEEEE\n        T:::::T        S:::::S            C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON:::::::::::N   N::::::N  E:::::E             \n        T:::::T         S::::SSSS         C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON:::::::N::::N  N::::::N  E::::::EEEEEEEEEE   \n        T:::::T          SS::::::SSSSS    C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N N::::N N::::::N  E:::::::::::::::E   \n        T:::::T            SSS::::::::SS  C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N  N::::N:::::::N  E:::::::::::::::E   \n        T:::::T               SSSSSS::::S C:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N   N:::::::::::N  E::::::EEEEEEEEEE   \n        T:::::T                    S:::::SC:::::C                     D:::::D     D:::::DO:::::O     O:::::ON::::::N    N::::::::::N  E:::::E             \n        T:::::T                    S:::::S C:::::C       CCCCCC       D:::::D    D:::::D O::::::O   O::::::ON::::::N     N:::::::::N  E:::::E       EEEEEE\n      TT:::::::TT      SSSSSSS     S:::::S  C:::::CCCCCCCC::::C     DDD:::::DDDDD:::::D  O:::::::OOO:::::::ON::::::N      N::::::::NEE::::::EEEEEEEE:::::E\n      T:::::::::T      S::::::SSSSSS:::::S   CC:::::::::::::::C     D:::::::::::::::DD    OO:::::::::::::OO N::::::N       N:::::::NE::::::::::::::::::::E\n      T:::::::::T      S:::::::::::::::SS      CCC::::::::::::C     D::::::::::::DDD        OO:::::::::OO   N::::::N        N::::::NE::::::::::::::::::::E\n      TTTTTTTTTTT       SSSSSSSSSSSSSSS           CCCCCCCCCCCCC     DDDDDDDDDDDDD             OOOOOOOOO     NNNNNNNN         NNNNNNNEEEEEEEEEEEEEEEEEEEEEE\n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n                                                                                                                                                          \n\n"
 
 # Init Ruby Env
 eval "$(rbenv init - zsh)"
@@ -96,7 +95,7 @@ export PATH="/Users/parth.mane/.rd/bin:$PATH"
 export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
-function lc() {
+function lc {
   if [ -d "$@" ]; then ls -laGh --color=auto "$@";
   elif [ -f "$@" ]; then less -rxf "$@";
   else echo "Not found"; return 1
@@ -118,15 +117,17 @@ alias multicat="tail -n +1"
 
 alias beep='afplay /System/Library/Sounds/Glass.aiff'
 
-function js() {
+function js {
   node -p "$*"
 }
 
 alias git-nohooks='git -c core.hooksPath=/dev/null'
 
 # git aliases
-function g() { # Git sequencer commands
+function g { # Git sequencer commands
   local repo_path=$(git rev-parse --git-dir 2>/dev/null)
+  local nohooks=()
+  if [ -n "$NOHOOKS" ]; then nohooks=(-c core.hooksPath=/dev/null); fi
   local sequencer_arg=--continue
   case "$1" in
     c)
@@ -144,21 +145,21 @@ function g() { # Git sequencer commands
   esac
 
   if [ -d "${repo_path}/rebase-merge" ]; then
-    git rebase "$sequencer_arg"
+    git "${nohooks[@]}" rebase "$sequencer_arg"
   elif [ -d "${repo_path}/rebase-apply" ]; then
-    git rebase "$sequencer_arg"
+    git "${nohooks[@]}" rebase "$sequencer_arg"
   elif [ -f "${repo_path}/MERGE_HEAD" ]; then
-    git merge "$sequencer_arg"
+    git "${nohooks[@]}" merge "$sequencer_arg"
   elif [ -f "${repo_path}/CHERRY_PICK_HEAD" ]; then
-    git cherry-pick "$sequencer_arg"
+    git "${nohooks[@]}" cherry-pick "$sequencer_arg"
   elif [ -f "${repo_path}/REVERT_HEAD" ]; then
-    git revert "$sequencer_arg"
+    git "${nohooks[@]}" revert "$sequencer_arg"
   else
     echo No sequencer in progress
   fi
 
 }
-function gb() { # Git Base
+function gb { # Git Base
   git merge-base HEAD "${1:-origin/main}"
 }
 alias gbc="git branch | ggrep -vEe '^\\*|main' | xargs git branch -d " # Git Branch Clean
@@ -166,7 +167,7 @@ alias gbC="git branch | ggrep -vEe '^\\*|main' | xargs git branch -D " # Git Bra
 alias gbd="git branch -d" # Git Branch Delete
 alias gbD="git branch -D" # Git Branch [D]elete
 alias gbl="git branch" # Git Branch List
-function gc() { # Git (chore) Commit
+function gc { # Git (chore) Commit
   htr
   git add .
   git commit -m "[$(git-ticket)] chore: $*"
@@ -176,27 +177,27 @@ alias gcam="git commit -am" # Git Commit -AM
 alias gcb="git checkout -b" # Git Checkout -B
 alias gcl="git config --list" # Git Config --List
 alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
-function gcpl() { # Git Cherry-Pick List
+function gcpl { # Git Cherry-Pick List
   git log --pretty=format:%H --reverse $* | gsed -zE 's/\n/ /g'
   echo
 }
 alias gco="git checkout" # Git CheckOut
 alias gcp="git cherry-pick" # Git Cherry-Pick
 alias gcpa="git cherry-pick --no-commit --strategy=recursive -X theirs" # Git Cherry-Pick Aggressive
-function gcpr() { # Git Cherry-Pick from Remote
+function gcpr { # Git Cherry-Pick from Remote
   git fetch origin "$@"
   git cherry-pick "$@"
 }
-function gcr() { # Git Checkout Remote
+function gcr { # Git Checkout Remote
   gcrny "$1"
   yarn
 }
-function gcrny() { # Git Checkout Remote No Yarn
+function gcrny { # Git Checkout Remote No Yarn
   git fetch origin "$1"
   git checkout "$1"
   git reset --hard FETCH_HEAD
 }
-function gd() { # Git Diff
+function gd { # Git Diff
   if [ $# -eq 0 ]; then
     git diff
     return
@@ -207,15 +208,15 @@ function gd() { # Git Diff
   fi
   git diff "$ctx_ref" "${@:2}"
 }
-function gds() { # Git Diff --Stat
+function gds { # Git Diff --Stat
   gd --stat $*
 }
-function gdss() { # Git Diff --ShortStat
+function gdss { # Git Diff --ShortStat
   gd --shortstat $*
 }
 alias gf="git fetch origin"
 alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
-function glc() { # Git Lazy Commit
+function glc { # Git Lazy Commit
   htr
   git add .
   git commit -m "[$(git-ticket)] chore: ${*:-Update}" -n
@@ -225,7 +226,7 @@ GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><
 alias gl='git -c color.ui=always log $GIT_LOG_FORMAT' # Git Log
 alias gln="$aliases[gl] -n" # Git Log -N
 alias gmm="git fetch origin main; git merge origin/main"
-function gmr() { # Git MR
+function gmr { # Git MR
   local merge_head=$(git merge-base HEAD "origin/${1:-main}")
   local git_commits=$(git -c color.ui=always -c core.pager= log ${GIT_LOG_FORMAT//-1/$COLUMNS} "$merge_head..HEAD")
   local summary=$(gdss $merge_head)
@@ -245,15 +246,15 @@ alias gppf="git fetch origin main && git fetch \$(git-head) && git reset --hard 
 GIT_SED_COLORIZER='/\x1b\[31m/{/\x1b\[32m/{h};s/^/\x1b[31m/;s/$/\x1b[m/;s/\x1b\[31m\[-/\x1b[m\x1b[41m\x1b[1m/g;s/-]\x1b\[m/\x1b[49m\x1b[31m/g;s/\x1b\[32m[^\x1b]*\+}\x1b\[m//g;p;x};/\x1b\[32m/{s/^/\x1b[32m/;s/$/\x1b[m/;s/\x1b\[32m\{\+/\x1b[m\x1b[42m\x1b[1m/g;s/\+}\x1b\[m/\x1b[49m\x1b[32m/g;s/\x1b\[31m[^\x1b]*-]\x1b\[m//g};/^\x1b\[1m((diff --git)|(index )|(\+{3}))/d;s/^\x1b\[1m-{3} a\//\x1b[1m\x1b[2m/'
 GIT_SED_STRIP_HUNKS='/^--$/{d};/\x1b\[2m/{n};/^\x1b\[((36m@@)|(1m\x1b\[2m))/!{H;$!d;};x;/\x1b\[3[12]m/!d'
 GIT_SED_STRIP_FILENAMES='/\x1b\[2m/!{x;p;d;x;p};/\x1b\[2m/{h}'
-function gqd() { # Git Quick Diff
+function gqd { # Git Quick Diff
   git -c core.whitespace=-trailing-space,-indent-with-non-tab,-tab-in-indent diff --color -w --word-diff-regex='[^[:space:]]' -U1 $* | gsed -re "$GIT_SED_COLORIZER" | gsed -re "$GIT_SED_STRIP_HUNKS" | gsed -nre "$GIT_SED_STRIP_FILENAMES"
 }
-function gqdf() { # Git Quick Diff Filtered
+function gqdf { # Git Quick Diff Filtered
   local GQD_FILTER=${argv[-1]}
   unset 'argv[-1]'
   git -c core.whitespace=-trailing-space,-indent-with-non-tab,-tab-in-indent diff --color -w --word-diff-regex='[^[:space:]]' -U1 $* | ggrep -U1 -P "^\\x1b\\[1m-{3}|^\\x1b\\[36m|$GQD_FILTER" | gsed -re "$GIT_SED_COLORIZER" | gsed -re "$GIT_SED_STRIP_HUNKS" | gsed -nre "$GIT_SED_STRIP_FILENAMES"
 }
-function grob() { # Git Rebase On Branch
+function grob { # Git Rebase On Branch
   git fetch origin "${1:-main}"
   git rebase "origin/${1:-main}"
 }
@@ -265,7 +266,7 @@ function grhr { # Git Reset --Hard on Remote
 }
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
-function gro() { # Git Rebase
+function gro { # Git Rebase
   htr
   git stash
   git fetch origin ${1:-main}
@@ -281,11 +282,16 @@ alias grp='git rev-parse' # Git Rev-Parse
 alias grs='git reset --soft' # Git Reset --Soft
 alias grum='git fetch origin main; git rebase origin/main' # Git Rebase with Updated Main
 alias gs='git status' # Git Status
+function gsr { # Git Scripted Rebase
+  local editor="gsed -i -e $1"
+  GIT_SEQUENCE_EDITOR="$editor" git-nohooks rebase --interactive "${@:2}"
+
+}
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
 alias gust="git restore --staged ." # Git UnSTage
-function git-head() {
+function git-head {
   local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref @{upstream} 2>/dev/null)
   if [ ! $? ]; then
     echo "$git_head" | sed 's!/! !'
@@ -294,14 +300,14 @@ function git-head() {
   fi
 }
 alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
-function git-lgtm() { # Git LGTM
+function git-lgtm { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
   git commit -m "[$(git-ticket)] chore: $*" -n
   git push
   cd -
 }
-function git-ticket() { # Gets ticket from current branch
+function git-ticket { # Gets ticket from current branch
   gr
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
   case $project_name in
@@ -320,7 +326,7 @@ alias git-yeet="git reset --hard; git clean -df"
 
 
 # cd to Code
-function cdc() {
+function cdc {
   if [ $@ ]; then cd "$CODE_PATH/$*"; else cd "$CODE_PATH"; fi
 }
 
@@ -329,7 +335,7 @@ alias color="parallel -ukq print -P"
 alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 
 # Show current mappings
-function mappings() {
+function mappings {
   local list_of_mappings=$(ggrep -E '\*\* \| [^-]' "$MAPPINGS_PATH")
   if [ $@ ]; then
     list_of_mappings=$(echo "$list_of_mappings" | ggrep -Ei "$@")
@@ -338,11 +344,11 @@ function mappings() {
 }
 
 # Rename current mapping
-function remap() {
+function remap {
   htr && gsed -ri "/\*\*$(basename $PWD)\*\*/{s/[^\\|]*\\|\$/ ${*:-Ref} |/}" "$MAPPINGS_PATH" && cd -
 }
 
-function get_code_context() {
+function get_code_context {
   local mapped=$(mappings "$@")
   local number_of_lines=$(echo "$mapped" | nocolor | ggrep -cvEe '^\s*$')
   if [ $number_of_lines -eq 0 ]; then
@@ -368,13 +374,13 @@ function get_code_context() {
 }
 
 # Quickly CheckOut a project
-function co() {
+function co {
   get_code_context "$@"
   cdc "$CODE_CONTEXT"
 }
 
 # Hop to a project with the same relative path; eg: S2/packages/docs -> S3/packages/docs
-function hop() {
+function hop {
   get_code_context "$@"
   local file_path=(${(s:/:)PWD})
   local src_folder=(${file_path[5]})
@@ -382,7 +388,7 @@ function hop() {
 }
 
 # Get project Root
-function gr() {
+function gr {
   unset CODE_ROOT
   if [ $vcs_info_msg_0_ ]; then
     # Git conflicts break this...
@@ -407,7 +413,7 @@ function gr() {
 }
 
 # Hop To project Root
-function htr() {
+function htr {
   gr
   if [ $CODE_ROOT ]; then
     cd "$CODE_ROOT"
@@ -419,7 +425,7 @@ function htr() {
 alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
 alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
 
-function wheeee() {
+function wheeee {
   gr
   if [[ "$1" == force ]]
     then local force_wheeee=1
@@ -449,7 +455,7 @@ function wheeee() {
 alias wheeeee='wheeee force'
 
 # Yarn Workspace
-function yw() {
+function yw {
   local mapped=$(yarn workspaces list --json | jq -r '[.location,.name] | join(" ")' | grep "$@")
   local number_of_lines=$(echo "$mapped" | nocolor | ggrep -cvEe '^\s*$')
   if [ $number_of_lines -eq 0 ]; then
@@ -476,7 +482,7 @@ function yw() {
 alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
 
 # Launch WebStorm
-function ws() {
+function ws {
   if [ $# -eq 0 ]; then
     local file_path=(${(s:/:)PWD})
     local src_folder=(${file_path[5]})
@@ -489,32 +495,32 @@ function ws() {
 }
 
 # Launch WebStorm in the relevant context
-function webs() {
+function webs {
   get_code_context "$@"
   ws "$CODE_CONTEXT"
 }
 
 # Check Out and WebStorm in the relevant context
-function cows() {
+function cows {
   get_code_context "$@"
   cdc "$CODE_CONTEXT"
   ws
 }
 
 # cd and launch WebStorm
-function setup() {
+function setup {
   co Ref
   ws
   remap "$@"
 }
 
 # Run the current repository/workspace
-function go() {
+function go {
   # if [[ $PWD ~= ]]
 }
 
 # Show Longest Running Process(es) (LRP)
-function lrp() {
+function lrp {
   if [[ $1 && $1 =~ '^[0-9]+$' ]]; then
     local amount_of_processes="-$1"
   fi
@@ -546,7 +552,7 @@ function lrp() {
   fi
 }
 
-function reset_prompt_time() {
+function reset_prompt_time {
   unset RPROMPT
   zle reset-prompt
   zle accept-line
@@ -555,10 +561,10 @@ zle -N reset_prompt_time
 bindkey "^M" reset_prompt_time
 
 # Command timers
-function preexec_cmd_timer() {
+function preexec_cmd_timer {
   CMD_TIMER=$(print -P %D{%s%3.})
 }
-function precmd_cmd_timer() {
+function precmd_cmd_timer {
   if [ $CMD_TIMER ]; then
     local now=$(print -P %D{%s%3.})
     local d_ms=$(($now - $CMD_TIMER))
@@ -577,15 +583,11 @@ function precmd_cmd_timer() {
     unset CMD_TIMER
     if [ $CMD_TIMER_STRING ]; then print -P "%F{60}Command executed in %F{62}$CMD_TIMER_STRING%f\n"; fi
     if ((m > 1)); then beep; fi
-    if [[ "$CMD_ARGS" == *' tsc'* ]]
-    then
-      echo "$ASCII_MESSAGES_TSC"
-    fi
   fi
 }
 
 # Command info
-function preexec_cmd_info() {
+function preexec_cmd_info {
   CMD_ARGS="$1"
   CMD_PWD=$(pwd)
 }
@@ -593,7 +595,7 @@ function preexec_cmd_info() {
 
 # VCS RPROMPT
 
-function precmd_vcs_info() {
+function precmd_vcs_info {
   vcs_info # Check VCS status
   unset RPROMPT
 
@@ -653,7 +655,7 @@ function precmd_vcs_info() {
 # Hydration Reminders
 LAST_HYDRATION_REMINDER=$SECONDS
 
-function precmd_hydration() {
+function precmd_hydration {
   local current_time=$SECONDS
   if (( current_time - LAST_HYDRATION_REMINDER >= 3600 )); then
     echo "$ASCII_MESSAGES_HYDRATION"
