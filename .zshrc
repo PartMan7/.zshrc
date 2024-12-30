@@ -514,11 +514,6 @@ function setup {
   remap "$@"
 }
 
-# Run the current repository/workspace
-function go {
-  # if [[ $PWD ~= ]]
-}
-
 # Show Longest Running Process(es) (LRP)
 function lrp {
   if [[ $1 && $1 =~ '^[0-9]+$' ]]; then
