@@ -560,6 +560,7 @@ function preexec_cmd_timer {
   CMD_TIMER=$(print -P %D{%s%3.})
 }
 function precmd_cmd_timer {
+  EXIT_STATUS=$?
   if [ $CMD_TIMER ]; then
     local now=$(print -P %D{%s%3.})
     local d_ms=$(($now - $CMD_TIMER))
@@ -577,7 +578,10 @@ function precmd_cmd_timer {
     fi
     unset CMD_TIMER
     if [ $CMD_TIMER_STRING ]; then print -P "%F{60}Command executed in %F{62}$CMD_TIMER_STRING%f\n"; fi
-    if ((m > 1)); then beep; fi
+    if ((m > 1)); then
+      beep
+      osascript -e "display notification \"Command: $CMD_ARGS\" with title \"Process $(test $EXIT_STATUS = 0 && echo succeeded || echo failed) after $CMD_TIMER_STRING\""
+    fi
   fi
 }
 
