@@ -222,7 +222,7 @@ function glc { # Git Lazy Commit
   git commit -m "[$(git-ticket)] chore: ${*:-Update}" -n
   cd -
 }
-GIT_LOG_FORMAT=("--pretty=format:%C(8)%H%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
+GIT_LOG_FORMAT=("--pretty=format:%C(8)%h%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
 alias gl='git -c color.ui=always log $GIT_LOG_FORMAT' # Git Log
 alias gln="$aliases[gl] -n" # Git Log -N
 alias gmm="git fetch origin main; git merge origin/main"
