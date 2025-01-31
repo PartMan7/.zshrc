@@ -667,10 +667,9 @@ precmd_functions+=(precmd_cmd_timer precmd_vcs_info precmd_hydration)
 preexec_functions+=(preexec_cmd_info preexec_cmd_timer)
 
 
-# NVM setup
-# export NVM_DIR="$HOME/.nvm"
-# [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"
-# [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+# N setup
+export N_PREFIX="$HOME/.n"
+export PATH="$N_PREFIX/bin:$PATH"
 
 # Command completions
 source ~/.zshcompletions
