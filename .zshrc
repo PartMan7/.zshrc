@@ -92,6 +92,7 @@ eval "$(rbenv init - zsh)"
 export PATH="/Users/parth.mane/.rd/bin:$PATH"
 
 # ls
+# export LESS='-rXF'
 export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
@@ -141,6 +142,9 @@ function g { # Git sequencer commands
       ;;
     q)
       local sequencer_arg=--quit
+      ;;
+    ?*)
+      local sequencer_arg="--$1"
       ;;
   esac
 
@@ -278,9 +282,13 @@ function gror { # Git Rebase On Rebased
   git fetch origin "$1"
   git rebase --onto "origin/$1" "origin/$1@{${2:-1}}"
 }
-alias grp='git rev-parse' # Git Rev-Parse
+function grp { # Git Rev-Parse alike; shows useful info
+  git -c color.ui=always log -n 1 ${GIT_LOG_FORMAT//\%h/\%H} $*
+}
 alias grs='git reset --soft' # Git Reset --Soft
 alias grum='git fetch origin main; git rebase origin/main' # Git Rebase with Updated Main
+alias grvp='git rev-parse' # Git ReV-Parse
+alias gryl='yarn && git add :/yarn.lock && g continue' # Git Resolve Yarn.Lock
 alias gs='git status' # Git Status
 function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
@@ -291,6 +299,9 @@ alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; 
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
 alias gust="git restore --staged ." # Git UnSTage
+function git-axe {
+  GREPDIFF_REGEX="${@[$#]}" GIT_EXTERNAL_DIFF="$CODE_PATH/diffaxe.sh" git -c color.ui=always log -p --ext-diff -S $*
+}
 function git-head {
   local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref @{upstream} 2>/dev/null)
   if [ ! $? ]; then
