@@ -96,6 +96,7 @@ export PATH="/Users/parth.mane/.rd/bin:$PATH"
 export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
+alias ll='lc'
 function lc {
   if [ -d "$@" ]; then ls -laGh --color=auto "$@";
   elif [ -f "$@" ]; then less -rxf "$@";
@@ -115,14 +116,13 @@ alias ybt="yarn build --scope=spaceweb-themes"
 alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
 alias multicat="tail -n +1"
+alias count="sort | uniq -c | sort"
 
 alias beep='afplay /System/Library/Sounds/Glass.aiff'
 
 function js {
   node -p "$*"
 }
-
-alias git-nohooks='git -c core.hooksPath=/dev/null'
 
 # git aliases
 function g { # Git sequencer commands
@@ -174,7 +174,7 @@ alias gbl="git branch" # Git Branch List
 function gc { # Git (chore) Commit
   htr
   git add .
-  git commit -m "[$(git-ticket)] chore: $*"
+  git commit -m "$(git-prefix) chore: $*"
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
@@ -223,7 +223,7 @@ alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc { # Git Lazy Commit
   htr
   git add .
-  git commit -m "[$(git-ticket)] chore: ${*:-Update}" -n
+  git commit -m "$(git-prefix) chore: ${*:-Update}" -n
   cd -
 }
 GIT_LOG_FORMAT=("--pretty=format:%C(8)%h%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
@@ -314,18 +314,15 @@ alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
-  git commit -m "[$(git-ticket)] chore: $*" -n
+  git commit -m "$(git-prefix) chore: $*" -n
   git push
   cd -
 }
 function git-ticket { # Gets ticket from current branch
-  gr
+  get-root
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
   case $project_name in
-    spaceweb)
-      echo 'spaceweb'
-    ;;
-    sprinklr-app-client)
+    spaceweb|sprinklr-app-client)
       git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/' | grep '.' || echo 'SPACE-00'
     ;;
     *)
@@ -333,6 +330,21 @@ function git-ticket { # Gets ticket from current branch
     ;;
   esac
 }
+function git-prefix { # Gets relevant prefix and stuff from current branch
+  get-root
+  local git_ticket="$(git-ticket)"
+  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
+  
+  case $project_name in
+    spaceweb)
+      echo "[spaceweb]"
+    ;;
+    *)
+      echo "[$git_ticket]"
+    ;;
+  esac
+}
+alias git-nohooks='git -c core.hooksPath=/dev/null'
 alias git-yeet="git reset --hard; git clean -df"
 
 
@@ -352,6 +364,11 @@ function mappings {
     list_of_mappings=$(echo "$list_of_mappings" | ggrep -Ei "$@")
   fi
   echo "$list_of_mappings" | gsed -r -e 's/\*\*/%F{62}/1' -e 's/\*\*/%F{8}:%F{cyan} /1' -e 's/\s?\|\s?//g' -e 's/$/%f/' | color
+}
+
+# Show all currently-checked-out GitLab branches
+function branches {
+  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)"#"$(git branch --show-current)"' \; | sort | gsed -r 's/^/%F{62}/;s/#/%F{8}:%F{50} /;s/$/%f/' | color
 }
 
 # Rename current mapping
@@ -399,7 +416,7 @@ function hop {
 }
 
 # Get project Root
-function gr {
+function get-root {
   unset CODE_ROOT
   if [ $vcs_info_msg_0_ ]; then
     # Git conflicts break this...
@@ -425,7 +442,7 @@ function gr {
 
 # Hop To project Root
 function htr {
-  gr
+  get-root
   if [ $CODE_ROOT ]; then
     cd "$CODE_ROOT"
   else
@@ -437,7 +454,7 @@ alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
 alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
 
 function wheeee {
-  gr
+  get-root
   if [[ "$1" == force ]]
     then local force_wheeee=1
     else local force_wheeee=0
