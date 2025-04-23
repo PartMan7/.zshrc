@@ -368,7 +368,7 @@ function mappings {
 
 # Show all currently-checked-out GitLab branches
 function branches {
-  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)"#"$(git branch --show-current)"' \; | sort | gsed -r 's/^/%F{62}/;s/#/%F{8}:%F{50} /;s/$/%f/' | color
+  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)"#"$(git branch --show-current)"#"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^/%F{62}/;s/#/%F{8}:%F{50} /1;s/#/%F{8} (%F{7}/1;s/$/%F{8})%f/' | color
 }
 
 # Rename current mapping
