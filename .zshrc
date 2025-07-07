@@ -290,9 +290,11 @@ alias grum='git fetch origin main; git rebase origin/main' # Git Rebase with Upd
 alias grvp='git rev-parse' # Git ReV-Parse
 alias gryl='yarn && git add :/yarn.lock && g continue' # Git Resolve Yarn.Lock
 alias gs='git status' # Git Status
+alias gsp='git status --porcelain' # Git Status --Porcelain
+alias gspno='git status --porcelain | sed "s/^..//"' # Git Status --Porcelain, Name Only
 function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
-  GIT_SEQUENCE_EDITOR="$editor" git-nohooks rebase --interactive "${@:2}"
+  GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 
 }
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
@@ -317,6 +319,12 @@ function git-lgtm { # Git LGTM
   git commit -m "$(git-prefix) chore: $*" -n
   git push
   cd -
+}
+function git-sed { # sed at a git level
+  for file in `git grep  --name-only "$1"`
+  do
+    gsed -i -r -e "$2" $file
+  done
 }
 function git-ticket { # Gets ticket from current branch
   get-root
