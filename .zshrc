@@ -171,10 +171,13 @@ alias gbC="git branch | ggrep -vEe '^\\*|main' | xargs git branch -D " # Git Bra
 alias gbd="git branch -d" # Git Branch Delete
 alias gbD="git branch -D" # Git Branch [D]elete
 alias gbl="git branch" # Git Branch List
+function gbn { # Git Branch Name
+  git rev-parse --abbrev-ref ${@:-@} 2>/dev/null
+}
 function gc { # Git (chore) Commit
   htr
   git add .
-  git commit -m "$(git-prefix) chore: $*"
+  git commit -m "$(git-prefix)chore: $*"
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
@@ -223,7 +226,7 @@ alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc { # Git Lazy Commit
   htr
   git add .
-  git commit -m "$(git-prefix) chore: ${*:-Update}" -n
+  git commit -m "$(git-prefix)chore: ${*:-Update}" -n
   cd -
 }
 GIT_LOG_FORMAT=("--pretty=format:%C(8)%h%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
@@ -316,7 +319,7 @@ alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
-  git commit -m "$(git-prefix) chore: $*" -n
+  git commit -m "$(git-prefix)chore: $*" -n
   git push
   cd -
 }
@@ -331,11 +334,9 @@ function git-ticket { # Gets ticket from current branch
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
   case $project_name in
     spaceweb|sprinklr-app-client)
-      git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/' | grep '.' || echo 'SPACE-00'
+      git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/;/./!d'
     ;;
     *)
-      echo "SPR-00"
-    ;;
   esac
 }
 function git-prefix { # Gets relevant prefix and stuff from current branch
@@ -345,10 +346,10 @@ function git-prefix { # Gets relevant prefix and stuff from current branch
   
   case $project_name in
     spaceweb)
-      echo "[spaceweb]"
+      echo "[spaceweb]$([ -n "$git_ticket" ] && echo "[$git_ticket]") "
     ;;
     *)
-      echo "[$git_ticket]"
+      [ -n "$git_ticket" ] && echo "[$git_ticket] "
     ;;
   esac
 }
