@@ -33,7 +33,7 @@
 ## red ! for no additions or modifications but some deleted diffs
 ## grey * for all other cases
 
-## Every time a cmmand is run, PROMPT will be set to the timestamp from runtime, and RPROMPT is removed for the duration of the command
+## Every time a command is run, PROMPT will be set to the timestamp from runtime, and RPROMPT is removed for the duration of the command
 
 # Commands
 ## If the command takes more than 1s to complete, display the time taken
@@ -176,7 +176,7 @@ function gbn { # Git Branch Name
 }
 function gc { # Git (chore) Commit
   htr
-  git add .
+  git add `gtf`
   git commit -m "$(git-prefix)$(git-commit-message $*)"
   cd -
 }
@@ -225,7 +225,7 @@ alias gf="git fetch origin"
 alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc { # Git Lazy Commit
   htr
-  git add .
+  git add `gtf`
   git commit -m "$(git-prefix)$(git-commit-message $*)" -n
   cd -
 }
@@ -320,7 +320,7 @@ function git-head {
 alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm { # Git LGTM
   cd $(git rev-parse --show-toplevel)
-  git add .
+  git add `gtf`
   git commit -m "$(git-prefix)$(git-commit-message $*)" -n
   git push
   cd -
