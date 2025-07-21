@@ -177,7 +177,7 @@ function gbn { # Git Branch Name
 function gc { # Git (chore) Commit
   htr
   git add .
-  git commit -m "$(git-prefix)chore: $*"
+  git commit -m "$(git-prefix)$(git-commit-message $*)"
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
@@ -226,7 +226,7 @@ alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 function glc { # Git Lazy Commit
   htr
   git add .
-  git commit -m "$(git-prefix)chore: ${*:-Update}" -n
+  git commit -m "$(git-prefix)$(git-commit-message $*)" -n
   cd -
 }
 GIT_LOG_FORMAT=("--pretty=format:%C(8)%h%Creset %Cgreen%ad%Creset %C(8)[%Cred%><(16,trunc)%an%C(8)]%Creset %C(yellow)%<|(-1,trunc)%s%Creset" "--date=format-local:%F %R")
@@ -273,6 +273,7 @@ function grhr { # Git Reset --Hard on Remote
 }
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
+alias grmr='git rebase --interactive `git merge-base HEAD origin/main`' # Git Rebase MR
 function gro { # Git Rebase
   htr
   git stash
@@ -294,12 +295,13 @@ alias grvp='git rev-parse' # Git ReV-Parse
 alias gryl='yarn && git add :/yarn.lock && g continue' # Git Resolve Yarn.Lock
 alias gs='git status' # Git Status
 alias gsp='git status --porcelain' # Git Status --Porcelain
-alias gspno='git status --porcelain | sed "s/^..//"' # Git Status --Porcelain, Name Only
+alias gspno='git status --porcelain | sed "s/^ . //"' # Git Status --Porcelain, Name Only
 function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 
 }
+alias gtf="git status --porcelain | sed 's/^.. //'" # Git Touched Files
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
@@ -319,7 +321,7 @@ alias git-log="git log --graph --decorate --oneline \$(git rev-list -g --all)"
 function git-lgtm { # Git LGTM
   cd $(git rev-parse --show-toplevel)
   git add .
-  git commit -m "$(git-prefix)chore: $*" -n
+  git commit -m "$(git-prefix)$(git-commit-message $*)" -n
   git push
   cd -
 }
@@ -352,6 +354,15 @@ function git-prefix { # Gets relevant prefix and stuff from current branch
       [ -n "$git_ticket" ] && echo "[$git_ticket] "
     ;;
   esac
+}
+function git-commit-message { # Creates the git commit message; default: chore
+  local git_message="${*:-Update}"
+  if ! [[ "$git_message" =~ ':' ]]
+  then
+    echo "chore: $git_message"
+  else
+    echo "$git_message"
+  fi
 }
 alias git-nohooks='git -c core.hooksPath=/dev/null'
 alias git-yeet="git reset --hard; git clean -df"
