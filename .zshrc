@@ -183,12 +183,12 @@ function gc { # Git (chore) Commit
 alias gcam="git commit -am" # Git Commit -AM
 function gcb { # Git Checkout -B
   git checkout -b $*
-  remap `echo $* | gsed -r 's#^.*/[^-]*-[^-]*-##;s/-/ /g;s/^.| ./\U\0/g'`
+  remap `echo $* | branch-to-name`
 }
 alias gcl="git config --list" # Git Config --List
 alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
 function gcpl { # Git Cherry-Pick List
-  git log --pretty=format:%H --reverse $* | gsed -zE 's/\n/ /g'
+  git log --pretty=format:%H --reverse ${*:-`gb`...@} | gsed -zE 's/\n/ /g'
   echo
 }
 alias gco="git checkout" # Git CheckOut
@@ -200,6 +200,7 @@ function gcpr { # Git Cherry-Pick from Remote
 }
 function gcr { # Git Checkout Remote
   gcrny "$1"
+  remap `echo $1 | branch-to-name`
   yarn
 }
 function gcrny { # Git Checkout Remote No Yarn
@@ -399,6 +400,8 @@ function remap {
   get-root
   gsed -ri "/\*\*$(basename "$CODE_ROOT")\*\*/{s/[^\\|]*\\|\$/ ${*:-Ref} |/}" "$MAPPINGS_PATH"
 }
+
+alias branch-to-name="gsed -r 's#^.*/[^-]*-[^-]*-##;s/-/ /g;s/^.| ./\\U\\0/g;s/\\b[AU]i\\b/\\U\\0/g'"
 
 function get_code_context {
   local mapped=$(mappings "$@")
