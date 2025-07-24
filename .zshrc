@@ -44,7 +44,7 @@ alias rzr="exec zsh"
 
 # All code directories are stored under ~/Documents/Code; rename as-needed
 REL_CODE_PATH='Documents/Code'
-CODE_PATH="$HOME/$REL_CODE_PATH"
+export CODE_PATH="$HOME/$REL_CODE_PATH"
 # The code-mappings file stores a list of all mappings in the code folder in tabular MD
 # Example of a mappings file:
 : '
@@ -57,7 +57,7 @@ CODE_PATH="$HOME/$REL_CODE_PATH"
 | **SU4** | Ref |
 
 '
-MAPPINGS_PATH="$CODE_PATH/code-mappings.md"
+export MAPPINGS_PATH="$CODE_PATH/code-mappings.md"
 
 preexec_functions=()
 precmd_functions=()
@@ -181,7 +181,10 @@ function gc { # Git (chore) Commit
   cd -
 }
 alias gcam="git commit -am" # Git Commit -AM
-alias gcb="git checkout -b" # Git Checkout -B
+function gcb { # Git Checkout -B
+  git checkout -b $*
+  remap `echo $* | gsed -r 's#^.*/[^-]*-[^-]*-##;s/-/ /g;s/^.| ./\U\0/g'`
+}
 alias gcl="git config --list" # Git Config --List
 alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
 function gcpl { # Git Cherry-Pick List
@@ -393,7 +396,8 @@ function branches {
 
 # Rename current mapping
 function remap {
-  htr && gsed -ri "/\*\*$(basename $PWD)\*\*/{s/[^\\|]*\\|\$/ ${*:-Ref} |/}" "$MAPPINGS_PATH" && cd -
+  get-root
+  gsed -ri "/\*\*$(basename "$CODE_ROOT")\*\*/{s/[^\\|]*\\|\$/ ${*:-Ref} |/}" "$MAPPINGS_PATH"
 }
 
 function get_code_context {
@@ -471,7 +475,10 @@ function htr {
   fi
 }
 alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
-alias hts="htr; cd packages/spaceweb" # Hop To Spaceweb
+function hts { # Hop To Spaceweb
+  get-root
+  cd "$CODE_ROOT/packages/spaceweb"
+}
 
 function wheeee {
   get-root
