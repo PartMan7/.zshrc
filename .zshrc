@@ -26,7 +26,7 @@
 # RPROMPT
 ## If the folder matches a label in the code mappings file (@/code-mappings.md), display the appropriate label in cyan
 ## If inside a .git repository, show the current branch in purple
-## If the revision ID isn't avilable (eg: merge conflict) show a red 'conflicts' message
+## If the revision ID isn't available (eg: merge conflict) show a red 'conflicts' message
 ## If there are git diffs, show:
 ## white # for modified diffs
 ## green + for no modified diffs but some added diffs
@@ -185,6 +185,7 @@ function gcb { # Git Checkout -B
   git checkout -b $*
   remap `echo $* | branch-to-name`
 }
+alias gch="git rev-parse @ | pbcopy" # Git Copy Head
 alias gcl="git config --list" # Git Config --List
 alias gcm="git checkout main; git fetch origin main; git merge FETCH_HEAD; yarn" # Git Checkout Main
 function gcpl { # Git Cherry-Pick List
@@ -315,7 +316,7 @@ function git-axe {
 }
 function git-head {
   local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref @{upstream} 2>/dev/null)
-  if [ ! $? ]; then
+  if [ $? -eq 0 ]; then
     echo "$git_head" | sed 's!/! !'
   else
     echo "origin $(git branch --show-current)"
