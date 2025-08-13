@@ -7,7 +7,7 @@
 ### git config core.untrackedcache true
 
 ## Install GNU tools (ggrep, gsed, etc):
-### brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk gnu-indent gnu-sed gnu-tar gnu-which gpatch grep gzip less m4 make nano screen watch wdiff wget zip
+### brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk gnu-indent gnu-sed gnu-tar gnu-which gpatch grep gzip less m4 make nano parallel screen watch wdiff wget zip
 
 ## Setup config files:
 ### Configure REL_CODE_PATH and MAPPINGS_PATH
@@ -40,7 +40,7 @@
 
 
 # Reload .zshrc
-alias rzr="exec zsh"
+alias rzr='cd "${ZSH_INIT_CWD:-$HOME}"; exec zsh'
 
 # All code directories are stored under ~/Documents/Code; rename as-needed
 REL_CODE_PATH='Documents/Code'
@@ -379,7 +379,7 @@ function cdc {
 }
 
 # Color helpers
-alias color="parallel -ukq print -P"
+alias color="parallel -uq --keep-order print -P"
 alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 
 # Show current mappings
@@ -650,6 +650,12 @@ function preexec_cmd_info {
   CMD_PWD=$(pwd)
 }
 
+if ! [[ $PWD = $HOME ]]
+then
+  # Terminal was sourced with a custom PWD! This is probably a WebStorm terminal.
+  ZSH_INIT_CWD="$PWD"
+fi
+
 
 # VCS RPROMPT
 
@@ -687,6 +693,17 @@ function precmd_vcs_info {
     fi
   fi
 
+  if [[ "$PWD" = $CODE_PATH* ]] && [[ -n "$ZSH_INIT_CWD" ]]
+  then
+    get-root
+    if ! [[ "$CODE_ROOT" = "$ZSH_INIT_CWD" ]]
+    then
+      local curr_tld="${${PWD//$HOME/~}//\~\/$REL_CODE_PATH\//}"
+      local init_tld="${${ZSH_INIT_CWD//$HOME/~}//\~\/$REL_CODE_PATH\//}"
+      rprompt_warning="in ${curr_tld} instead of ${init_tld}"
+    fi
+  fi
+
   # RPROMPT branch
   if [ $vcs_info_msg_1_ ]; then
     local git_status=$(git status --porcelain)
@@ -703,7 +720,8 @@ function precmd_vcs_info {
       unset diff_char
     fi
     RPROMPT="$diff_char$RPROMPT%F{8}<%F{63}$vcs_info_msg_1_%F{8}>%f"
-  elif [ $rprompt_warning ]; then
+  fi
+  if [ $rprompt_warning ]; then
     RPROMPT+="%F{8}<%F{red}$rprompt_warning%F{8}>%f"
   fi
 
