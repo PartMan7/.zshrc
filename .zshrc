@@ -7,7 +7,7 @@
 ### git config core.untrackedcache true
 
 ## Install GNU tools (ggrep, gsed, etc):
-### brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk gnu-indent gnu-sed gnu-tar gnu-which gpatch grep gzip less m4 make nano parallel screen watch wdiff wget zip
+### brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk gnu-indent gnu-sed gnu-tar gnu-which gpatch grep gzip less m4 make nano parallel patchutils screen watch wdiff wget zip
 
 ## Setup config files:
 ### Configure REL_CODE_PATH and MAPPINGS_PATH
