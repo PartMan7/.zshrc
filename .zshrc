@@ -379,7 +379,7 @@ function cdc {
 }
 
 # Color helpers
-alias color="parallel -uq --keep-order print -P"
+alias color="parallel -q --keep-order print -P"
 alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 
 # Show current mappings
@@ -394,6 +394,11 @@ function mappings {
 # Show all currently-checked-out GitLab branches
 function branches {
   find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)"#"$(git branch --show-current)"#"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^/%F{62}/;s/#/%F{8}:%F{50} /1;s/#/%F{8} (%F{7}/1;s/$/%F{8})%f/' | color
+}
+
+# Combination of 'mappings' and 'branches'
+function repos {
+  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)",#R"$(gsed -nr "/$(basename $PWD)/{s/\s*\|$//;s/^.*\|\s+//;p}" "$MAPPINGS_PATH")"#E,#B"$(git branch --show-current)",#D"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^/%F{62}/;s/#R/%F{8}<%F{50}/;s/#E/%F{8}>%f/;s/#B/%F{8}%F{48}/1;s/#D/%F{8}(%F{7}/1;s/$/%F{8})%f/' | color | column -t -s ,
 }
 
 # Rename current mapping
