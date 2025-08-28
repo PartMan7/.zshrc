@@ -9,6 +9,9 @@
 ## Install GNU tools (ggrep, gsed, etc):
 ### brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk gnu-indent gnu-sed gnu-tar gnu-which gpatch grep gzip less m4 make nano parallel patchutils screen watch wdiff wget zip
 
+## Install Nerd Fonts
+### brew install font-symbols-only-nerd-font
+
 ## Setup config files:
 ### Configure REL_CODE_PATH and MAPPINGS_PATH
 
@@ -108,8 +111,6 @@ alias grec="grep --color=auto"
 
 alias yeet="killall -15"
 alias murder="killall -9"
-
-alias whew="gco main && gpp && gbc ||: && htr && yarn && remap"
 
 alias yb="yarn build"
 alias ybt="yarn build --scope=spaceweb-themes"
@@ -378,6 +379,11 @@ function cdc {
   if [ $@ ]; then cd "$CODE_PATH/$*"; else cd "$CODE_PATH"; fi
 }
 
+function whew {
+  if [[ -n $1 ]] cd "$CODE_PATH/$1"
+  gco main && gpp && gbc ||: && htr && yarn && remap
+}
+
 # Color helpers
 alias color="parallel -q --keep-order print -P"
 alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
@@ -398,7 +404,7 @@ function branches {
 
 # Combination of 'mappings' and 'branches'
 function repos {
-  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)",#R"$(gsed -nr "/$(basename $PWD)/{s/\s*\|$//;s/^.*\|\s+//;p}" "$MAPPINGS_PATH")"#E,#B"$(git branch --show-current)",#D"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^/%F{62}/;s/#R/%F{8}<%F{50}/;s/#E/%F{8}>%f/;s/#B/%F{8}%F{48}/1;s/#D/%F{8}(%F{7}/1;s/$/%F{8})%f/' | color | column -t -s ,
+  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)",#R"$(gsed -nr "/$(basename $PWD)/{s/\s*\|$//;s/^.*\|\s+//;p}" "$MAPPINGS_PATH")"#E,#B"$(curr_branch="$(git branch --show-current)"; echo "$curr_branch")",#D"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^SU./ %F{69} %F{62} \0/1;s/^S./ %F{75} %F{62} \0 /1;s/#RRef/%F{8}<%F{73}Ref/;s/#R/%F{8}<%F{50}/;s/#E/%F{8}>%f/;s/#Bmain/%F{8}%F{50}  %F{73}main/1;s/#B/%F{8}%F{50} %F{48}/1;s/#D/%F{8}(%F{7}/1;s/$/%F{8})%f/' | color | column -t -s ,
 }
 
 # Rename current mapping
@@ -724,7 +730,7 @@ function precmd_vcs_info {
     else
       unset diff_char
     fi
-    RPROMPT="$diff_char$RPROMPT%F{8}<%F{63}$vcs_info_msg_1_%F{8}>%f"
+    RPROMPT="$diff_char$RPROMPT%F{8}<%F{63}$([[ $vcs_info_msg_1_ = main ]] || echo ' ')$vcs_info_msg_1_%F{8}>%f"
   fi
   if [ $rprompt_warning ]; then
     RPROMPT+="%F{8}<%F{red}$rprompt_warning%F{8}>%f"
