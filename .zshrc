@@ -451,7 +451,10 @@ function hop {
   get_code_context "$@"
   local file_path=(${(s:/:)PWD})
   local src_folder=(${file_path[5]})
-  cd "$(echo "$PWD" | sed "s/$src_folder/$CODE_CONTEXT/")"
+  if [[ -z "$src_folder" ]]
+  then cdc "$CODE_CONTEXT"
+  else cd "$(echo "$PWD" | sed "s/$src_folder/$CODE_CONTEXT/")"
+  fi
 }
 
 # Get project Root
