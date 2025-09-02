@@ -251,6 +251,7 @@ function gmr { # Git MR
 alias gmrf='git diff $(git merge-base HEAD origin/main)' # Git MR Full
 alias gmrs='gds $(git merge-base HEAD origin/main)' # Git MR Stat
 alias gmrss='gdss $(git merge-base HEAD origin/main)' # Git MR ShortStat
+alias gp='npx prettier -w `gtf`' # Git Prettify
 alias gph="git push origin HEAD" # Git Push origin Head Unsafe
 alias gphf="git push origin HEAD --force-with-lease" # Git Push origin Head Force
 alias gpu="git pull origin HEAD" # Git PUll
