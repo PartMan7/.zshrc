@@ -95,8 +95,7 @@ eval "$(rbenv init - zsh)"
 export PATH="/Users/parth.mane/.rd/bin:$PATH"
 
 # ls
-# export LESS='-rXF'
-export LESSOPEN="| $(which src-hilite-lesspipe.sh) %s"
+export LESS='--quit-if-one-screen -R'
 alias ls="ls -G --color=auto"
 alias l="ls -laGh --color=auto"
 alias ll='lc'
@@ -247,6 +246,7 @@ function gmr { # Git MR
   echo "$commit_count commit(s)"
   if [[ -n "$summary" ]]; then echo "$summary"; fi
   if [[ -n "$git_commits" ]]; then echo "$git_commits"; fi
+  git merge-tree HEAD "origin/${1:-main}" | sed -n '/CONFLICT/p'
 }
 alias gmrf='git diff $(git merge-base HEAD origin/main)' # Git MR Full
 alias gmrs='gds $(git merge-base HEAD origin/main)' # Git MR Stat
@@ -766,9 +766,10 @@ export PATH="$N_PREFIX/bin:$PATH"
 # Command completions
 source ~/.zshcompletions
 
-# bun completions
+# Bun
 [ -s "/Users/parth.mane/.bun/_bun" ] && source "/Users/parth.mane/.bun/_bun"
-
-# bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Sublime Text
+export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH"
