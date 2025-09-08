@@ -243,10 +243,10 @@ function gmr { # Git MR
   local merge_head=$(git merge-base HEAD "origin/${1:-main}")
   local git_commits=$(git -c color.ui=always -c core.pager= log ${GIT_LOG_FORMAT//-1/$COLUMNS} "$merge_head..HEAD")
   local summary=$(gdss $merge_head)
-  local commit_count=$(echo "$git_commits" | wc -l)
+  local commit_count=$([[ -n "$git_commits" ]] && (echo "$git_commits" | wc -l) || echo No)
   echo "$commit_count commit(s)"
-  echo "$summary"
-  echo "$git_commits"
+  if [[ -n "$summary" ]]; then echo "$summary"; fi
+  if [[ -n "$git_commits" ]]; then echo "$git_commits"; fi
 }
 alias gmrf='git diff $(git merge-base HEAD origin/main)' # Git MR Full
 alias gmrs='gds $(git merge-base HEAD origin/main)' # Git MR Stat
