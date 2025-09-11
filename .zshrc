@@ -11,6 +11,7 @@
 
 ## Install Nerd Fonts
 ### brew install font-symbols-only-nerd-font
+### Download https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip
 
 ## Setup config files:
 ### Configure REL_CODE_PATH and MAPPINGS_PATH
@@ -317,7 +318,7 @@ function git-axe {
   GREPDIFF_REGEX="${@[$#]}" GIT_EXTERNAL_DIFF="$CODE_PATH/diffaxe.sh" git -c color.ui=always log -p --ext-diff -S $*
 }
 function git-head {
-  local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref @{upstream} 2>/dev/null)
+  local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref '@{upstream}' 2>/dev/null)
   if [ $? -eq 0 ]; then
     echo "$git_head" | sed 's!/! !'
   else
