@@ -93,7 +93,7 @@ ASCII_MESSAGES_HYDRATION="\n  ______                     _               _      
 # Init Ruby Env
 eval "$(rbenv init - zsh)"
 # Init Rancher
-export PATH="/Users/parth.mane/.rd/bin:$PATH"
+export PATH="$HOME/.rd/bin:$PATH"
 
 # ls
 export LESS='--quit-if-one-screen -R'
@@ -768,7 +768,7 @@ export PATH="$N_PREFIX/bin:$PATH"
 source ~/.zshcompletions
 
 # Bun
-[ -s "/Users/parth.mane/.bun/_bun" ] && source "/Users/parth.mane/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
