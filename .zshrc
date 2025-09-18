@@ -84,6 +84,7 @@ setopt cdsilent # Disable the 'cd to' message when using cd -
 setopt interactivecomments # Allow inline #
 setopt correct # Enable autocorrection
 setopt globdots # Enable dot-prefixed file indexing by default
+setopt extendedglob # Extended globbing!
 setopt histignoredups # Ignore duplicate entries in history
 setopt recexact # Don't autocomplete if an exact match is found
 
@@ -406,7 +407,7 @@ function branches {
 
 # Combination of 'mappings' and 'branches'
 function repos {
-  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)",#R"$(gsed -nr "/$(basename $PWD)/{s/\s*\|$//;s/^.*\|\s+//;p}" "$MAPPINGS_PATH")"#E,#B"$(curr_branch="$(git branch --show-current)"; echo "$curr_branch")",#D"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^SU./ %F{69} %F{62} \0/1;s/^S./ %F{75} %F{62} \0 /1;s/#RRef/%F{8}<%F{73}Ref/;s/#R/%F{8}<%F{50}/;s/#E/%F{8}>%f/;s/#Bmain/%F{8}%F{50}  %F{73}main/1;s/#B/%F{8}%F{50} %F{48}/1;s/#D/%F{8}(%F{7}/1;s/$/%F{8})%f/' | color | column -t -s ,
+  find -E "$CODE_PATH" -maxdepth 1 -regex '.*/SU?[0-9]' -exec sh -c 'cd {}; echo "$(basename $PWD)",#R"$(gsed -nr "/$(basename $PWD)/{s/\s*\|$//;s/^.*\|\s+//;p}" "$MAPPINGS_PATH")"#E,#B"$(curr_branch="$(git branch --show-current)"; echo "$curr_branch")",#D"$(git log -n 1 "--date=format-local:%F %R" --pretty=format:%cd)"' \; | sort | gsed -r 's/^SU./ %F{69} %F{62} \0/1;s/^S./ %F{75} %F{62} \0 /1;s/#RRef/%F{8}<%F{73}Ref/;s/#R/%F{8}<%F{50}/;s/#E/%F{8}>%f/;s/#Bmain/%F{8}%F{50}  %F{73}main/1;s/#B/%F{8}%F{50} %F{48}/1;s/#D/%F{8}(%F{7}/1;s/$/%F{8})%f/' | color | column -t -s ,
 }
 
 # Rename current mapping
