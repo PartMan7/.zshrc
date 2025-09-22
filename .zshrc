@@ -259,7 +259,7 @@ alias gphf="git push origin HEAD --force-with-lease" # Git Push origin Head Forc
 alias gpu="git pull origin HEAD" # Git PUll
 alias gpp="git fetch origin main && git fetch \$(git-head) && git merge FETCH_HEAD" # Git Pull Partial
 alias gppf="git fetch origin main && git fetch \$(git-head) && git reset --hard FETCH_HEAD" # Git Pull Partial Forced
-GIT_SED_COLORIZER='/\x1b\[31m/{/\x1b\[32m/{h};s/^/\x1b[31m/;s/$/\x1b[m/;s/\x1b\[31m\[-/\x1b[m\x1b[41m\x1b[1m/g;s/-]\x1b\[m/\x1b[49m\x1b[31m/g;s/\x1b\[32m[^\x1b]*\+}\x1b\[m//g;p;x};/\x1b\[32m/{s/^/\x1b[32m/;s/$/\x1b[m/;s/\x1b\[32m\{\+/\x1b[m\x1b[42m\x1b[1m/g;s/\+}\x1b\[m/\x1b[49m\x1b[32m/g;s/\x1b\[31m[^\x1b]*-]\x1b\[m//g};/^\x1b\[1m((diff --git)|(index )|(\+{3}))/d;s/^\x1b\[1m-{3} a\//\x1b[1m\x1b[2m/'
+GIT_SED_COLORIZER='/\x1b\[31m/{/\x1b\[32m/{h};s/^/\x1b[31m/;s/$/\x1b[m/;s/\x1b\[31m\[-/\x1b[m\x1b[41m\x1b[30;1m/g;s/-]\x1b\[m/\x1b[49m\x1b[31m/g;s/\x1b\[32m[^\x1b]*\+}\x1b\[m//g;p;x};/\x1b\[32m/{s/^/\x1b[32m/;s/$/\x1b[m/;s/\x1b\[32m\{\+/\x1b[m\x1b[42m\x1b[30;1m/g;s/\+}\x1b\[m/\x1b[49m\x1b[32m/g;s/\x1b\[31m[^\x1b]*-]\x1b\[m//g};/^\x1b\[1m((diff --git)|(index )|(\+{3}))/d;s/^\x1b\[1m-{3} a\//\x1b[30;1m\x1b[2m/'
 GIT_SED_STRIP_HUNKS='/^--$/{d};/\x1b\[2m/{n};/^\x1b\[((36m@@)|(1m\x1b\[2m))/!{H;$!d;};x;/\x1b\[3[12]m/!d'
 GIT_SED_STRIP_FILENAMES='/\x1b\[2m/!{x;p;d;x;p};/\x1b\[2m/{h}'
 function gqd { # Git Quick Diff
