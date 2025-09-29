@@ -230,6 +230,7 @@ function gdss { # Git Diff --ShortStat
 }
 alias gf="git fetch origin"
 alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
+alias gflg="git ls-tree --name-only -r HEAD | ggrep" # Git Files List Grepped
 function glc { # Git Lazy Commit
   htr
   git add `gtf`
