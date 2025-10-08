@@ -88,6 +88,12 @@ setopt extendedglob # Extended globbing!
 setopt histignoredups # Ignore duplicate entries in history
 setopt recexact # Don't autocomplete if an exact match is found
 
+# Make sure Alt/Opt arrow keys work
+bindkey "^[[1;3C" forward-word
+bindkey "^[[1;3D" backward-word
+bindkey '\ef' forward-word
+bindkey '\eb' backward-word
+
 ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
 ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
 
@@ -229,6 +235,7 @@ function gdss { # Git Diff --ShortStat
   gd --shortstat $*
 }
 alias gf="git fetch origin"
+alias gfc="git commit --no-verify --no-edit" # Git Force-Commit
 alias gfl="git ls-tree --name-only -r HEAD" # Git Files List
 alias gflg="git ls-tree --name-only -r HEAD | ggrep" # Git Files List Grepped
 function glc { # Git Lazy Commit
