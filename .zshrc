@@ -44,7 +44,8 @@
 
 
 # Reload .zshrc
-alias rzr='cd "${ZSH_INIT_CWD:-$HOME}"; exec zsh'
+# alias rzr='cd "${ZSH_INIT_CWD:-$HOME}"; exec zsh' # TODO fix the source-dir flagging setup
+alias rzr='exec zsh'
 
 # All code directories are stored under ~/Documents/Code; rename as-needed
 REL_CODE_PATH='Documents/Code'
@@ -169,7 +170,9 @@ function g { # Git sequencer commands
   else
     echo No sequencer in progress
   fi
-
+}
+function gac { # Git Add Changed
+  git add `gtf $*`
 }
 function gb { # Git Base
   git merge-base HEAD "${1:-origin/main}"
@@ -217,6 +220,7 @@ function gcrny { # Git Checkout Remote No Yarn
   git checkout "$1"
   git reset --hard FETCH_HEAD
 }
+alias gcrt='git commit --amend -n -m "$(git log -1 --pretty=%B | gsed -r "s/\\[\w*-[[:digit:]]*\\]//")"' # Git Commit Remove Ticket
 function gd { # Git Diff
   if [ $# -eq 0 ]; then
     git diff
@@ -278,6 +282,9 @@ function gqdf { # Git Quick Diff Filtered
   unset 'argv[-1]'
   git -c core.whitespace=-trailing-space,-indent-with-non-tab,-tab-in-indent diff --color -w --word-diff-regex='[^[:space:]]' -U1 $* | ggrep -U1 -P "^\\x1b\\[1m-{3}|^\\x1b\\[36m|$GQD_FILTER" | gsed -re "$GIT_SED_COLORIZER" | gsed -re "$GIT_SED_STRIP_HUNKS" | gsed -nre "$GIT_SED_STRIP_FILENAMES"
 }
+function grc { # Git Rename Commit
+  git commit --amend -n -m "$(git log -1 --pretty=%B | sed $*)"
+}
 function grob { # Git Rebase On Branch
   git fetch origin "${1:-main}"
   git rebase "origin/${1:-main}"
@@ -316,7 +323,6 @@ alias gspno='git status --porcelain | sed "s/^ . //"' # Git Status --Porcelain, 
 function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
-
 }
 alias gtf="git status --porcelain | sed 's/^.. //'" # Git Touched Files
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
@@ -678,7 +684,7 @@ function preexec_cmd_info {
 if ! [[ $PWD = $HOME ]]
 then
   # Terminal was sourced with a custom PWD! This is probably a WebStorm terminal.
-  ZSH_INIT_CWD="$PWD"
+  # ZSH_INIT_CWD="$PWD" # TODO fix the source-dir flagging setup
 fi
 
 
