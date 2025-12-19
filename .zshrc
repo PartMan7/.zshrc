@@ -338,7 +338,7 @@ function git-head {
   git_head="$(git rev-parse --verify --quiet --symbolic-full-name --abbrev-ref '@{upstream}')"
   local res="$?"
   local git_head
-  if [ $? -eq 0 ] && [ -n "$git_head" ]; then
+  if [ $res -eq 0 ] && [ -n "$git_head" ]; then
     echo "$git_head" | sed 's!/! !'
   else
     echo "origin $(git branch --show-current)"
