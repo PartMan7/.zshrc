@@ -285,10 +285,6 @@ function gqdf { # Git Quick Diff Filtered
 function grc { # Git Rename Commit
   git commit --amend -n -m "$(git log -1 --pretty=%B | sed $*)"
 }
-function grob { # Git Rebase On Branch
-  git fetch origin "${1:-main}"
-  git rebase "origin/${1:-main}"
-}
 alias grhcf="git reset --hard; git clean -f" # Git Reset --Hard; git Clean -F
 alias grh="git reset --hard" # Git Reset --Hard
 function grhr { # Git Reset --Hard on Remote
@@ -297,7 +293,9 @@ function grhr { # Git Reset --Hard on Remote
 }
 alias gri='git rebase --interactive' # Git Rebase --Interactive
 alias grm='git rebase origin/main' # Git Rebase Main
-alias grmr='git rebase --interactive `git merge-base HEAD origin/main`' # Git Rebase MR
+function grmr { # Git Rebase MR
+  git rebase --interactive `git merge-base HEAD origin/"${1:-main}"`
+}
 function gro { # Git Rebase
   htr
   git stash
@@ -305,6 +303,10 @@ function gro { # Git Rebase
   git rebase "origin/${1:-main}"
   git stash pop
   cd -
+}
+function grob { # Git Rebase On Branch
+  git fetch origin "${1:-main}"
+  git rebase "origin/${1:-main}"
 }
 function gror { # Git Rebase On Rebased
   git fetch origin "$1"
@@ -324,7 +326,7 @@ function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 }
-alias gtf="git status --porcelain | sed 's/^.. //'" # Git Touched Files
+alias gtf="git status --porcelain | sed 's/^.. //;s/.* -> //'" # Git Touched Files
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
@@ -333,8 +335,10 @@ function git-axe {
   GREPDIFF_REGEX="${@[$#]}" GIT_EXTERNAL_DIFF="$CODE_PATH/diffaxe.sh" git -c color.ui=always log -p --ext-diff -S $*
 }
 function git-head {
-  local git_head=$(git rev-parse --symbolic-full-name --abbrev-ref '@{upstream}' 2>/dev/null)
-  if [ $? -eq 0 ]; then
+  git_head="$(git rev-parse --verify --quiet --symbolic-full-name --abbrev-ref '@{upstream}')"
+  local res="$?"
+  local git_head
+  if [ $? -eq 0 ] && [ -n "$git_head" ]; then
     echo "$git_head" | sed 's!/! !'
   else
     echo "origin $(git branch --show-current)"
