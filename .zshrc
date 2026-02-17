@@ -265,7 +265,12 @@ function gmr { # Git MR
 alias gmrf='git diff $(git merge-base HEAD origin/main)' # Git MR Full
 alias gmrs='gds $(git merge-base HEAD origin/main)' # Git MR Stat
 alias gmrss='gdss $(git merge-base HEAD origin/main)' # Git MR ShortStat
-alias gp='npx prettier -w `gtf`' # Git Prettify
+function gnac { # Git No-Add Commit
+  htr
+  git commit -m "$(git-prefix)$(git-commit-message $*)"
+  cd -
+}
+alias gp='npx prettier -w `gtf | grep -E -e "\.tsx?" -e "\.jsx?" -e "\.json"`' # Git Prettify
 alias gph="git push origin HEAD" # Git Push origin Head Unsafe
 alias gphf="git push origin HEAD --force-with-lease" # Git Push origin Head Force
 alias gpu="git pull origin HEAD" # Git PUll
@@ -326,7 +331,7 @@ function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 }
-alias gtf="git status --porcelain | sed 's/^.. //;s/.* -> //'" # Git Touched Files
+alias gtf="git status --short | sed 's/^.. //;s/.* -> //'" # Git Touched Files ## this does NOT work with --porcelain due to forced absolute file paths
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
@@ -402,7 +407,7 @@ function cdc {
 
 function whew {
   if [[ -n $1 ]] cd "$CODE_PATH/$1"
-  gco main && gpp && gbc ||: && htr && yarn && remap
+  gco main && gpp && gbc ||: && htr && (yarn; remap)
 }
 
 # Color helpers
@@ -547,6 +552,10 @@ function wheeee {
   esac
 }
 alias wheeeee='wheeee force'
+
+function space-up { # Upgrades Spaceweb + Themes to the target version
+  yarn up @sprinklrjs/spaceweb@$1 @sprinklrjs/spaceweb-themes@$1
+}
 
 # Yarn Workspace
 function yw {
