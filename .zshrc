@@ -622,29 +622,48 @@ function lrp {
   if [[ $1 && $1 =~ '^[0-9]+$' ]]; then
     local amount_of_processes="-$1"
   fi
-  local list_of_processes=$(ps -So 'etime,command')
+  local list_of_processes=$(ps -So 'pid,etime,command')
   list_of_processes=$(echo "$list_of_processes" |
     tail -n +2 |
     ggrep -Ev '\bzsh|fsmonitor--daemon' |
-    sort -rk1 |
+    sort -rk2 |
     gsed -r 's/^\s+//'
   )
-  local formatted_list=$(echo "$list_of_processes" |
-    gsed -re 's/[^ ]*\/(yarn|node)([^ ,]*\..?js)/\1/' \
+  local enriched=""
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local pid=${line%% *}
+    local rest=${line#* }
+    local cwd=$(lsof -p "$pid" -w 2>/dev/null | awk '$4=="cwd" {print $9}')
+    local root=""
+    if [[ -n "$cwd" ]]; then
+      local cwd_parts=(${(s:/:)cwd})
+      if [[ "${cwd_parts[4]}" == "Code" ]]; then
+        root="${cwd_parts[5]}"
+      fi
+    fi
+    enriched+="${rest}"$'\t'"${root}"$'\n'
+  done <<< "$list_of_processes"
+  enriched="${enriched%$'\n'}"
+  local formatted_list=$(echo "$enriched" |
+    gsed -re 's/^\s+//' \
+      -e 's/[^ ]*\/(yarn|node)([^ ,]*\..?js)/\1/' \
       -e 's/--max-old-space-size=([0-9]+)[0-9]{3}/%F{8}\1GB%f/' \
-      -e 's/ [^ ]+\// %F{8}#%f/g' -e 's/^[0-9:.-]+/%F{50}\0%f/' \
+      -e 's/ [^ ]+\// %F{8}#%f/g' \
+      -e 's/^[0-9:.-]+/%F{50}&%f/' \
       -e 's/log --pretty(.(\?! --))*/log %F{8}pretty%f\1/' \
       -e 's/--pretty/%F{8}pretty%f/' \
-      -e 's/%F\{8}#%f(yarn|node|tsc) /\1 /g' |
+      -e 's/%F\{8}#%f(yarn|node|tsc) /\1 /g' \
+      -e 's/node yarn /yarn /g' |
     uniq -c |
-    gawk '{ freq=$1; $1=""; print $0 (freq == "1" ? " " : " %F{62}x" freq "%f") }'
+    gawk -F'\t' '{ match($1, /^ *([0-9]+) (.*)/, m); freq=m[1]; cmd=m[2]; root=$2; i=index(cmd," "); tc=(i>0 ? substr(cmd,1,i-1) : cmd); cc=(i>0 ? substr(cmd,i+1) : ""); print " " tc "," (length(root)>0 ? "%F{105}" root "%f" : "%F{240}???%f") "," cc "," (freq+0==1 ? "" : "%F{62}x" freq "%f") }'
   )
   if [ $amount_of_processes ]; then formatted_list=$(echo "$formatted_list" | head "$amount_of_processes"); fi
   if echo "$formatted_list" | grep -qE 'node %F\{8}\d+.B.*tsc'; then
     formatted_list=$(echo "$formatted_list" | grep -v 'node yarn tsc')
   fi
   if [ $formatted_list ]; then
-    echo "$formatted_list" | color
+    echo "$formatted_list" | color | column -t -s ','
   else
     return 1
   fi
