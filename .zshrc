@@ -95,6 +95,11 @@ bindkey "^[[1;3D" backward-word
 bindkey '\ef' forward-word
 bindkey '\eb' backward-word
 
+
+# Color helpers
+alias color="parallel -q --keep-order print -P"
+alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
+
 ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
 ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
 
@@ -270,7 +275,7 @@ function gnac { # Git No-Add Commit
   git commit -m "$(git-prefix)$(git-commit-message $*)"
   cd -
 }
-alias gp='npx prettier -w `gtf | grep -E -e "\.tsx?" -e "\.jsx?" -e "\.json"`' # Git Prettify
+alias gp='npx prettier -w `gtf | grep -E -e "\.tsx?" -e "\.[cm]?jsx?" -e "\.json"`' # Git Prettify
 alias gph="git push origin HEAD" # Git Push origin Head Unsafe
 alias gphf="git push origin HEAD --force-with-lease" # Git Push origin Head Force
 alias gpu="git pull origin HEAD" # Git PUll
@@ -368,7 +373,8 @@ function git-ticket { # Gets ticket from current branch
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
   case $project_name in
     spaceweb|sprinklr-app-client)
-      git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/;/./!d'
+      local ticket_name="$(git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/;/./!d')"
+      if [ "$ticket_name" != 'EDGE-1230' ]; then echo "$ticket_name"; fi
     ;;
     *)
   esac
@@ -399,20 +405,16 @@ function git-commit-message { # Creates the git commit message; default: chore
 alias git-nohooks='git -c core.hooksPath=/dev/null'
 alias git-yeet="git reset --hard; git clean -df"
 
-
 # cd to Code
 function cdc {
   if [ $@ ]; then cd "$CODE_PATH/$*"; else cd "$CODE_PATH"; fi
 }
 
 function whew {
+  if ! git diff --quiet @; then git status --porcelain; echo '%F{red}Local changes found!%f' | color; return 1; fi
   if [[ -n $1 ]] cd "$CODE_PATH/$1"
   gco main && gpp && gbc ||: && htr && (yarn; remap)
 }
-
-# Color helpers
-alias color="parallel -q --keep-order print -P"
-alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 
 # Show current mappings
 function mappings {
@@ -554,7 +556,13 @@ function wheeee {
 alias wheeeee='wheeee force'
 
 function space-up { # Upgrades Spaceweb + Themes to the target version
-  yarn up @sprinklrjs/spaceweb@$1 @sprinklrjs/spaceweb-themes@$1
+  local space_version="$1"
+  if [ -z "$space_version" ]
+  then
+    local space_version="^$(yarn npm info --json @sprinklrjs/spaceweb | jq -r .version)"
+  fi
+  yarn up @sprinklrjs/spaceweb@$space_version @sprinklrjs/spaceweb-themes@$space_version
+  yarn workspace @sprinklrjs/public-assets postinstall
 }
 
 # Yarn Workspace
@@ -592,6 +600,18 @@ function ws {
     webstorm "$CODE_PATH/$src_folder"
   elif [ $@ -a -d "$CODE_PATH/$*" ]; then
     webstorm "$CODE_PATH/$*"
+  else
+    echo "No valid folder passed"
+  fi
+}
+# Launch Cursor
+function cs {
+  if [ $# -eq 0 ]; then
+    local file_path=(${(s:/:)PWD})
+    local src_folder=(${file_path[5]})
+    cursor "$CODE_PATH/$src_folder"
+  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
+    cursor "$CODE_PATH/$*"
   else
     echo "No valid folder passed"
   fi
