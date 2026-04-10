@@ -336,7 +336,7 @@ function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 }
-alias gtf="git status --short | sed 's/^.. //;s/.* -> //'" # Git Touched Files ## this does NOT work with --porcelain due to forced absolute file paths
+alias gtf="git status --short | sed 's/^.. //;s/.* -> //;/_test/d'" # Git Touched Files ## this does NOT work with --porcelain due to forced absolute file paths
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
