@@ -592,6 +592,8 @@ function yw {
 # Debug VRT
 alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
 
+alias docker-yeet="docker container prune --force && docker image prune --all --force && docker builder prune --all --force"
+
 # Launch WebStorm
 function ws {
   if [ $# -eq 0 ]; then
