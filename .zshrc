@@ -336,11 +336,21 @@ function gsr { # Git Scripted Rebase
   local editor="gsed -i -e $1"
   GIT_SEQUENCE_EDITOR="$editor" git -c core.hooksPath=/dev/null rebase --interactive "${@:2}"
 }
-alias gtf="git status --short | sed 's/^.. //;s/.* -> //;/_test/d'" # Git Touched Files ## this does NOT work with --porcelain due to forced absolute file paths
+alias gtf="git status --short | sed 's/^.. //;s/.* -> //;/_test.tsx/d'" # Git Touched Files ## this does NOT work with --porcelain due to forced absolute file paths
 alias guar='htr; git fetch $(git-head); git stash; git reset --hard FETCH_HEAD; git stash pop; cd -' # Git Update After Rebase
 alias gum="git fetch origin main" # Git Update Main
 alias gup="git log --branches --not --remotes --no-walk --decorate --pretty='format:%Cred%<(32,ltrunc)%S%Creset %C(8)%H%Creset %C(yellow)%<(40,trunc)%s%Creset'" # Git UnPushed
 alias gust="git restore --staged ." # Git UnSTage
+function vimg { # VIM + gflG
+  local files=($(gflg "$@"))
+  if (( ${#files[@]} == 0 )); then echo "No results..."; return; fi
+  if (( ${#files[@]} == 1 )); then vim "$files"; return; fi
+
+  select file in "${files[@]}"; do
+    if [[ -f "$file" ]]; then vim "$file"; fi
+    break
+  done
+}
 function git-axe {
   GREPDIFF_REGEX="${@[$#]}" GIT_EXTERNAL_DIFF="$CODE_PATH/diffaxe.sh" git -c color.ui=always log -p --ext-diff -S $*
 }
@@ -843,3 +853,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # Sublime Text
 export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH"
+
+# Cursor
+export PATH="$HOME/.local/bin:$PATH"
