@@ -42,30 +42,25 @@
 # Commands
 ## If the command takes more than 1s to complete, display the time taken
 
-
-# Reload .zshrc
-# alias rzr='cd "${ZSH_INIT_CWD:-$HOME}"; exec zsh' # TODO fix the source-dir flagging setup
-alias rzr='exec zsh'
-
-# All code directories are stored under ~/Documents/Code; rename as-needed
-REL_CODE_PATH='Documents/Code'
-export CODE_PATH="$HOME/$REL_CODE_PATH"
 # The code-mappings file stores a list of all mappings in the code folder in tabular MD
 # Example of a mappings file:
 : '
 
-| Editor | Use |
+| Project | Description |
 |----|----|
-| **SU1** | Migrate forms-app |
-| **SU2** | Integrate Codemod |
-| **SU3** | Style Infra Migration |
-| **SU4** | Ref |
+| **ProjectFolder1** | Description 1 |
+| **ProjectFolder2** | Description 2 |
+| **ProjectFolder3** | Description 3 |
+| **ProjectFolder4** | Description 4 |
 
 '
-export MAPPINGS_PATH="$CODE_PATH/code-mappings.md"
 
-preexec_functions=()
-precmd_functions=()
+# region config #
+
+# All code directories are stored under ~/Documents/Code; rename as-needed
+REL_CODE_PATH='Documents/Code'
+export CODE_PATH="$HOME/$REL_CODE_PATH"
+export MAPPINGS_PATH="$CODE_PATH/code-mappings.md"
 
 # Enable tab-completion
 autoload -Uz compinit && compinit
@@ -95,18 +90,24 @@ bindkey "^[[1;3D" backward-word
 bindkey '\ef' forward-word
 bindkey '\eb' backward-word
 
+function reset_prompt_time {
+  unset RPROMPT
+  zle reset-prompt
+  zle accept-line
+}
+zle -N reset_prompt_time
+bindkey "^M" reset_prompt_time
+
+# endregion #
+
+# region utils #
+
+# Reload .zshrc
+alias rzr='exec zsh'
 
 # Color helpers
 alias color="parallel -q --keep-order print -P"
 alias nocolor="gsed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
-
-ASCII_MESSAGES_WALK="\n   ____          __                                    _ _    \n  / ___| ___    / _| ___  _ __    __ _  __      ____ _| | | __\n | |  _ / _ \\  | |_ / _ \\| '__|  / _\` | \\ \\ /\\ / / _\` | | |/ /\n | |_| | (_) | |  _| (_) | |    | (_| |  \\ V  V / (_| | |   < \n  \\____|\\___/  |_|  \\___/|_|     \\__,_|   \\_/\\_/ \\__,_|_|_|\\_\\ \n                                                              \n"
-ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
-
-# Init Ruby Env
-eval "$(rbenv init - zsh)"
-# Init Rancher
-export PATH="$HOME/.rd/bin:$PATH"
 
 # ls
 export LESS='--quit-if-one-screen -R'
@@ -125,10 +126,6 @@ alias grec="grep --color=auto"
 alias yeet="killall -15"
 alias murder="killall -9"
 
-alias yb="yarn build"
-alias ybt="yarn build --scope=spaceweb-themes"
-alias yarn-ddos="yarn docs:dev:only-spaceweb"
-
 alias multicat="tail -n +1"
 alias count="sort | uniq -c | sort"
 
@@ -138,7 +135,66 @@ function js {
   node -p "$*"
 }
 
-# git aliases
+alias docker-yeet="docker container prune --force && docker image prune --all --force && docker builder prune --all --force"
+
+# Show Longest Running Process(es) (LRP)
+function lrp {
+  if [[ $1 && $1 =~ '^[0-9]+$' ]]; then
+    local amount_of_processes="-$1"
+  fi
+  local list_of_processes=$(ps -So 'pid,etime,command')
+  list_of_processes=$(echo "$list_of_processes" |
+    tail -n +2 |
+    ggrep -Ev '\bzsh|fsmonitor--daemon' |
+    sort -rk2 |
+    gsed -r 's/^\s+//'
+  )
+  local enriched=""
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    local pid=${line%% *}
+    local rest=${line#* }
+    local cwd=$(lsof -p "$pid" -w 2>/dev/null | awk '$4=="cwd" {print $9}')
+    local root=""
+    if [[ -n "$cwd" ]]; then
+      local cwd_parts=(${(s:/:)cwd})
+      if [[ "${cwd_parts[4]}" == "Code" ]]; then
+        root="${cwd_parts[5]}"
+      fi
+    fi
+    enriched+="${rest}"$'\t'"${root}"$'\n'
+  done <<< "$list_of_processes"
+  enriched="${enriched%$'\n'}"
+  local formatted_list=$(echo "$enriched" |
+    gsed -re 's/^\s+//' \
+      -e 's/[^ ]*\/(yarn|node)([^ ,]*\..?js)/\1/' \
+      -e 's/--max-old-space-size=([0-9]+)[0-9]{3}/%F{8}\1GB%f/' \
+      -e 's/ [^ ]+\// %F{8}#%f/g' \
+      -e 's/^[0-9:.-]+/%F{50}&%f/' \
+      -e 's/log --pretty(.(\?! --))*/log %F{8}pretty%f\1/' \
+      -e 's/--pretty/%F{8}pretty%f/' \
+      -e 's/%F\{8}#%f(yarn|node|tsc) /\1 /g' \
+      -e 's/node yarn /yarn /g' |
+    uniq -c |
+    gawk -F'\t' '{ match($1, /^ *([0-9]+) (.*)/, m); freq=m[1]; cmd=m[2]; root=$2; i=index(cmd," "); tc=(i>0 ? substr(cmd,1,i-1) : cmd); cc=(i>0 ? substr(cmd,i+1) : ""); print " " tc "," (length(root)>0 ? "%F{105}" root "%f" : "%F{240}???%f") "," cc "," (freq+0==1 ? "" : "%F{62}x" freq "%f") }'
+  )
+  if [ $amount_of_processes ]; then formatted_list=$(echo "$formatted_list" | head "$amount_of_processes"); fi
+  if echo "$formatted_list" | grep -qE 'node %F\{8}\d+.B.*tsc'; then
+    formatted_list=$(echo "$formatted_list" | grep -v 'node yarn tsc')
+  fi
+  if [ $formatted_list ]; then
+    echo "$formatted_list" | color | column -t -s ','
+  else
+    return 1
+  fi
+}
+
+# endregion #
+
+# region git #
+
+alias branch-to-name="gsed -r 's#^.*/[^-]*-[^-]*-##;s/-/ /g;s/^.| ./\\U\\0/g;s/\\b[AU]i\\b/\\U\\0/g'"
+
 function g { # Git sequencer commands
   local repo_path=$(git rev-parse --git-dir 2>/dev/null)
   local nohooks=()
@@ -378,31 +434,6 @@ function git-sed { # sed at a git level
     gsed -i -r -e "$2" $file
   done
 }
-function git-ticket { # Gets ticket from current branch
-  get-root
-  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
-  case $project_name in
-    spaceweb|sprinklr-app-client)
-      local ticket_name="$(git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/;/./!d')"
-      if [ "$ticket_name" != 'EDGE-1230' ]; then echo "$ticket_name"; fi
-    ;;
-    *)
-  esac
-}
-function git-prefix { # Gets relevant prefix and stuff from current branch
-  get-root
-  local git_ticket="$(git-ticket)"
-  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
-  
-  case $project_name in
-    spaceweb)
-      echo "[spaceweb]$([ -n "$git_ticket" ] && echo "[$git_ticket]") "
-    ;;
-    *)
-      [ -n "$git_ticket" ] && echo "[$git_ticket] "
-    ;;
-  esac
-}
 function git-commit-message { # Creates the git commit message; default: chore
   local git_message="${*:-Update}"
   if ! [[ "$git_message" =~ ':' ]]
@@ -415,14 +446,18 @@ function git-commit-message { # Creates the git commit message; default: chore
 alias git-nohooks='git -c core.hooksPath=/dev/null'
 alias git-yeet="git reset --hard; git clean -df"
 
+# endregion #
+
+# region navigation #
+
 # cd to Code
 function cdc {
   if [ $@ ]; then cd "$CODE_PATH/$*"; else cd "$CODE_PATH"; fi
 }
 
 function whew {
-  if ! git diff --quiet @; then git status --porcelain; echo '%F{red}Local changes found!%f' | color; return 1; fi
   if [[ -n $1 ]] cd "$CODE_PATH/$1"
+  if ! git diff --quiet @; then git status --porcelain; echo '%F{red}Local changes found!%f' | color; return 1; fi
   gco main && gpp && gbc ||: && htr && (yarn; remap)
 }
 
@@ -450,8 +485,6 @@ function remap {
   get-root
   gsed -ri "/\*\*$(basename "$CODE_ROOT")\*\*/{s/[^\\|]*\\|\$/ ${*:-Ref} |/}" "$MAPPINGS_PATH"
 }
-
-alias branch-to-name="gsed -r 's#^.*/[^-]*-[^-]*-##;s/-/ /g;s/^.| ./\\U\\0/g;s/\\b[AU]i\\b/\\U\\0/g'"
 
 function get_code_context {
   local mapped=$(mappings "$@")
@@ -530,50 +563,6 @@ function htr {
     return 1
   fi
 }
-alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
-function hts { # Hop To Spaceweb
-  get-root
-  cd "$CODE_ROOT/packages/spaceweb"
-}
-
-function wheeee {
-  get-root
-  if [[ "$1" == force ]]
-    then local force_wheeee=1
-    else local force_wheeee=0
-  fi
-  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
-  case $project_name in
-    spaceweb)
-      htr
-      if [[ $force_wheeee -eq 1 ]]; then yarn build --scope=spaceweb-themes; fi
-      yarn docs:dev:only-spaceweb
-    ;;
-    sprinklr-app-client)
-      htw
-      if [[ $force_wheeee -eq 1 ]]
-      then
-        yarn prenext-dev
-        yarn prebuild
-      fi
-      yarn next-dev:only
-    ;;
-    *)
-      echo "Uhh no idea how to handle $project_name sorry"
-    ;;
-  esac
-}
-alias wheeeee='wheeee force'
-
-function space-up { # Upgrades Spaceweb + Themes to the target version
-  local space_version="$1"
-  if [ -z "$space_version" ]
-  then
-    local space_version="^$(yarn npm info --json @sprinklrjs/spaceweb | jq -r .version)"
-  fi
-  yarn up @sprinklrjs/spaceweb@$space_version @sprinklrjs/spaceweb-themes@$space_version
-  yarn workspace @sprinklrjs/public-assets postinstall
-}
 
 # Yarn Workspace
 function yw {
@@ -599,117 +588,14 @@ function yw {
   cd $(echo "$workspace_context" | cut -d' ' -f 1)
 }
 
-# Debug VRT
-alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
+# endregion #
 
-alias docker-yeet="docker container prune --force && docker image prune --all --force && docker builder prune --all --force"
+# region hooks #
 
-# Launch WebStorm
-function ws {
-  if [ $# -eq 0 ]; then
-    local file_path=(${(s:/:)PWD})
-    local src_folder=(${file_path[5]})
-    webstorm "$CODE_PATH/$src_folder"
-  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
-    webstorm "$CODE_PATH/$*"
-  else
-    echo "No valid folder passed"
-  fi
-}
-# Launch Cursor
-function cs {
-  if [ $# -eq 0 ]; then
-    local file_path=(${(s:/:)PWD})
-    local src_folder=(${file_path[5]})
-    cursor "$CODE_PATH/$src_folder"
-  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
-    cursor "$CODE_PATH/$*"
-  else
-    echo "No valid folder passed"
-  fi
-}
+preexec_functions=()
+precmd_functions=()
 
-# Launch WebStorm in the relevant context
-function webs {
-  get_code_context "$@"
-  ws "$CODE_CONTEXT"
-}
 
-# Check Out and WebStorm in the relevant context
-function cows {
-  get_code_context "$@"
-  cdc "$CODE_CONTEXT"
-  ws
-}
-
-# cd and launch WebStorm
-function setup {
-  co Ref
-  ws
-  remap "$@"
-}
-
-# Show Longest Running Process(es) (LRP)
-function lrp {
-  if [[ $1 && $1 =~ '^[0-9]+$' ]]; then
-    local amount_of_processes="-$1"
-  fi
-  local list_of_processes=$(ps -So 'pid,etime,command')
-  list_of_processes=$(echo "$list_of_processes" |
-    tail -n +2 |
-    ggrep -Ev '\bzsh|fsmonitor--daemon' |
-    sort -rk2 |
-    gsed -r 's/^\s+//'
-  )
-  local enriched=""
-  while IFS= read -r line; do
-    [[ -z "$line" ]] && continue
-    local pid=${line%% *}
-    local rest=${line#* }
-    local cwd=$(lsof -p "$pid" -w 2>/dev/null | awk '$4=="cwd" {print $9}')
-    local root=""
-    if [[ -n "$cwd" ]]; then
-      local cwd_parts=(${(s:/:)cwd})
-      if [[ "${cwd_parts[4]}" == "Code" ]]; then
-        root="${cwd_parts[5]}"
-      fi
-    fi
-    enriched+="${rest}"$'\t'"${root}"$'\n'
-  done <<< "$list_of_processes"
-  enriched="${enriched%$'\n'}"
-  local formatted_list=$(echo "$enriched" |
-    gsed -re 's/^\s+//' \
-      -e 's/[^ ]*\/(yarn|node)([^ ,]*\..?js)/\1/' \
-      -e 's/--max-old-space-size=([0-9]+)[0-9]{3}/%F{8}\1GB%f/' \
-      -e 's/ [^ ]+\// %F{8}#%f/g' \
-      -e 's/^[0-9:.-]+/%F{50}&%f/' \
-      -e 's/log --pretty(.(\?! --))*/log %F{8}pretty%f\1/' \
-      -e 's/--pretty/%F{8}pretty%f/' \
-      -e 's/%F\{8}#%f(yarn|node|tsc) /\1 /g' \
-      -e 's/node yarn /yarn /g' |
-    uniq -c |
-    gawk -F'\t' '{ match($1, /^ *([0-9]+) (.*)/, m); freq=m[1]; cmd=m[2]; root=$2; i=index(cmd," "); tc=(i>0 ? substr(cmd,1,i-1) : cmd); cc=(i>0 ? substr(cmd,i+1) : ""); print " " tc "," (length(root)>0 ? "%F{105}" root "%f" : "%F{240}???%f") "," cc "," (freq+0==1 ? "" : "%F{62}x" freq "%f") }'
-  )
-  if [ $amount_of_processes ]; then formatted_list=$(echo "$formatted_list" | head "$amount_of_processes"); fi
-  if echo "$formatted_list" | grep -qE 'node %F\{8}\d+.B.*tsc'; then
-    formatted_list=$(echo "$formatted_list" | grep -v 'node yarn tsc')
-  fi
-  if [ $formatted_list ]; then
-    echo "$formatted_list" | color | column -t -s ','
-  else
-    return 1
-  fi
-}
-
-function reset_prompt_time {
-  unset RPROMPT
-  zle reset-prompt
-  zle accept-line
-}
-zle -N reset_prompt_time
-bindkey "^M" reset_prompt_time
-
-# Command timers
 function preexec_cmd_timer {
   CMD_TIMER=$(print -P %D{%s%3.})
 }
@@ -734,7 +620,11 @@ function precmd_cmd_timer {
     if [ $CMD_TIMER_STRING ]; then print -P "%F{60}Command executed in %F{62}$CMD_TIMER_STRING%f\n"; fi
     if ((m > 1)); then
       beep
-      osascript -e "display notification \"Command: $CMD_ARGS\" with title \"Process $(test $EXIT_STATUS = 0 && echo succeeded || echo failed) after $CMD_TIMER_STRING\""
+      local notification_message="Command: $CMD_ARGS\nProcess $(test $EXIT_STATUS = 0 && echo succeeded || echo failed) after $CMD_TIMER_STRING"
+      if which osascript > /dev/null
+      then
+        osascript -e "display notification \"$notification_message\""
+      fi
     fi
   fi
 }
@@ -744,13 +634,6 @@ function preexec_cmd_info {
   CMD_ARGS="$1"
   CMD_PWD=$(pwd)
 }
-
-if ! [[ $PWD = $HOME ]]
-then
-  # Terminal was sourced with a custom PWD! This is probably a WebStorm terminal.
-  # ZSH_INIT_CWD="$PWD" # TODO fix the source-dir flagging setup
-fi
-
 
 # VCS RPROMPT
 
@@ -824,6 +707,7 @@ function precmd_vcs_info {
 }
 
 # Hydration Reminders
+ASCII_MESSAGES_HYDRATION="\n  ______                     _               _                             _ \n / _____) _                 | |             | |              _            | |\n( (____ _| |_ _____ _   _   | |__  _   _  __| | ____ _____ _| |_ _____  __| |\n \\____ (_   _|____ | | | |  |  _ \\| | | |/ _  |/ ___|____ (_   _) ___ |/ _  |\n _____) )| |_/ ___ | |_| |  | | | | |_| ( (_| | |   / ___ | | |_| ____( (_| |\n(______/  \\__)_____|\\__  |  |_| |_|\\__  |\\____|_|   \\_____|  \\__)_____)\\____|\n                   (____/         (____/                                     \n\n"
 LAST_HYDRATION_REMINDER=$SECONDS
 
 function precmd_hydration {
@@ -838,21 +722,167 @@ function precmd_hydration {
 precmd_functions+=(precmd_cmd_timer precmd_vcs_info precmd_hydration)
 preexec_functions+=(preexec_cmd_info preexec_cmd_timer)
 
+# endregion #
+
+# Command completions
+source ~/.zshcompletions
+
+# region installs #
 
 # N setup
 export N_PREFIX="$HOME/.n"
 export PATH="$N_PREFIX/bin:$PATH"
 
-# Command completions
-source ~/.zshcompletions
+# Init Ruby Env
+eval "$(rbenv init - zsh)"
 
 # Bun
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
+# endregion #
+
+
+# region editors #
+
+
 # Sublime Text
 export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH"
 
 # Cursor
 export PATH="$HOME/.local/bin:$PATH"
+
+# Launch WebStorm
+function ws {
+  if [ $# -eq 0 ]; then
+    local file_path=(${(s:/:)PWD})
+    local src_folder=(${file_path[5]})
+    webstorm "$CODE_PATH/$src_folder"
+  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
+    webstorm "$CODE_PATH/$*"
+  else
+    echo "No valid folder passed"
+  fi
+}
+# Launch Cursor
+function cs {
+  if [ $# -eq 0 ]; then
+    local file_path=(${(s:/:)PWD})
+    local src_folder=(${file_path[5]})
+    cursor "$CODE_PATH/$src_folder"
+  elif [ $@ -a -d "$CODE_PATH/$*" ]; then
+    cursor "$CODE_PATH/$*"
+  else
+    echo "No valid folder passed"
+  fi
+}
+
+# Launch WebStorm in the relevant context
+function webs {
+  get_code_context "$@"
+  ws "$CODE_CONTEXT"
+}
+
+# Check Out and WebStorm in the relevant context
+function cows {
+  get_code_context "$@"
+  cdc "$CODE_CONTEXT"
+  ws
+}
+
+# cd and launch WebStorm
+function setup {
+  co Ref
+  ws
+  remap "$@"
+}
+
+# endregion #
+
+# region work-specific stuff #
+
+alias yb="yarn build"
+alias ybt="yarn build --scope=spaceweb-themes"
+alias yarn-ddos="yarn docs:dev:only-spaceweb"
+
+function git-ticket { # Gets ticket from current branch
+  get-root
+  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
+  case $project_name in
+    spaceweb|sprinklr-app-client)
+      local ticket_name="$(git rev-parse --abbrev-ref @ | ggrep -Eo '^\w+/\w+-[0-9]+' | gsed 's!.*/!!;s/.*/\U&/;/./!d')"
+      if [ "$ticket_name" != 'EDGE-1230' ]; then echo "$ticket_name"; fi
+    ;;
+    *)
+  esac
+}
+function git-prefix { # Gets relevant prefix and stuff from current branch
+  get-root
+  local git_ticket="$(git-ticket)"
+  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
+  
+  case $project_name in
+    spaceweb)
+      echo "[spaceweb]$([ -n "$git_ticket" ] && echo "[$git_ticket]") "
+    ;;
+    *)
+      [ -n "$git_ticket" ] && echo "[$git_ticket] "
+    ;;
+  esac
+}
+alias htw="yw spr-main-web" # Hop To apps/spr-main-Web
+function hts { # Hop To Spaceweb
+  get-root
+  cd "$CODE_ROOT/packages/spaceweb"
+}
+
+
+function wheeee {
+  get-root
+  if [[ "$1" == force ]]
+    then local force_wheeee=1
+    else local force_wheeee=0
+  fi
+  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
+  case $project_name in
+    spaceweb)
+      htr
+      if [[ $force_wheeee -eq 1 ]]; then yarn build --scope=spaceweb-themes; fi
+      yarn docs:dev:only-spaceweb
+    ;;
+    sprinklr-app-client)
+      htw
+      if [[ $force_wheeee -eq 1 ]]
+      then
+        yarn prenext-dev
+        yarn prebuild
+      fi
+      yarn next-dev:only
+    ;;
+    *)
+      echo "Uhh no idea how to handle $project_name sorry"
+    ;;
+  esac
+}
+alias wheeeee='wheeee force'
+
+function space-up { # Upgrades Spaceweb + Themes to the target version
+  local space_version="$1"
+  if [ -z "$space_version" ]
+  then
+    local space_version="^$(yarn npm info --json @sprinklrjs/spaceweb | jq -r .version)"
+  fi
+  yarn up @sprinklrjs/spaceweb@$space_version @sprinklrjs/spaceweb-themes@$space_version
+  yarn workspace @sprinklrjs/public-assets postinstall
+}
+
+
+# Debug VRT
+alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
+
+
+# Init Rancher
+export PATH="$HOME/.rd/bin:$PATH"
+
+# endregion #
