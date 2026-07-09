@@ -39,6 +39,11 @@ case "$OS" in
   *) IS_MAC=0; IS_LINUX=0 ;;
 esac
 
+if [ ! -t 0 ]; then
+  PARTZSH_NONINTERACTIVE=1
+fi
+export PARTZSH_NONINTERACTIVE
+
 install_mac_deps() {
   command -v brew >/dev/null 2>&1 || die "brew not found (required on macOS)"
   brew install autoconf bash binutils coreutils diffutils ed findutils flex gawk \
@@ -106,7 +111,9 @@ fi
 
 need_cmd git
 
-if [ -d "$PARTZSH/.git" ]; then
+if [ "${PARTZSH_SKIP_CLONE:-}" = 1 ]; then
+  [ -f "$PARTZSH/zshrc" ] || die "PARTZSH_SKIP_CLONE set but $PARTZSH/zshrc is missing"
+elif [ -d "$PARTZSH/.git" ]; then
   if ! git -C "$PARTZSH" diff --quiet 2>/dev/null || ! git -C "$PARTZSH" diff --cached --quiet 2>/dev/null; then
     die "$PARTZSH has local changes; commit or stash before updating"
   fi
@@ -119,7 +126,9 @@ else
 fi
 
 CONF="$PARTZSH/conf/zsh.conf"
-if [ ! -f "$CONF" ]; then
+
+write_zsh_conf() {
+  [ -f "$CONF" ] && return 0
   mkdir -p "$PARTZSH/conf"
   if [ "$IS_MAC" -eq 1 ]; then
     MAC_VAL=yes
@@ -132,16 +141,20 @@ if [ ! -f "$CONF" ]; then
     LINUX_VAL=no
   fi
 
-  printf "Enable work profile (Sprinklr helpers)? [y/N] "
-  read -r work_ans
-  case "$work_ans" in
-    [yY]|[yY][eE][sS]) WORK_VAL=yes ;;
-    *) WORK_VAL=no ;;
-  esac
+  WORK_VAL="${PARTZSH_WORK:-no}"
+  code_path_ans="${PARTZSH_CODE_PATH:-Documents/Code}"
 
-  printf "Code path relative to HOME [Documents/Code]: "
-  read -r code_path_ans
-  [ -z "$code_path_ans" ] && code_path_ans="Documents/Code"
+  if [ -z "${PARTZSH_NONINTERACTIVE:-}" ] && [ -t 0 ] && [ -r /dev/tty ]; then
+    printf "Enable work profile (Sprinklr helpers)? [y/N] "
+    read -r work_ans </dev/tty || work_ans=""
+    case "$work_ans" in
+      [yY]|[yY][eE][sS]) WORK_VAL=yes ;;
+    esac
+
+    printf "Code path relative to HOME [Documents/Code]: "
+    read -r code_path_ans </dev/tty || code_path_ans=""
+    [ -z "$code_path_ans" ] && code_path_ans="Documents/Code"
+  fi
 
   cat >"$CONF" <<EOF
 work=$WORK_VAL
@@ -151,7 +164,7 @@ code_path=$code_path_ans
 mappings_path=
 EOF
   echo "partzsh install: wrote $CONF"
-fi
+}
 
 mkdir -p "$PARTZSH/data"
 
@@ -182,6 +195,7 @@ EOF
 }
 
 append_zshrc_marker
+write_zsh_conf
 
 append_bashrc_snippet() {
   BASHRC="$HOME/.bashrc"
