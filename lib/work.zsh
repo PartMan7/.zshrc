@@ -51,7 +51,6 @@ function space-up {
     local space_version="^$(yarn npm info --json @sprinklrjs/spaceweb | jq -r .version)"
   fi
   yarn up @sprinklrjs/spaceweb@$space_version @sprinklrjs/spaceweb-themes@$space_version
-  yarn workspace @sprinklrjs/public-assets postinstall
 }
 
 alias vrt-debug="npx ts-node --project internals/vrt/tsconfig.json internals/vrt/scripts/preVrt.ts && rm -rf packages/docs/public/resources/vrt-snapshots/[^.]* || : && cp -r .lostpixel/[^.]* packages/docs/public/resources/vrt-snapshots && yarn ts-node internals/vrt/scripts/lostPixelJson.ts && yarn docs:dev:only-spaceweb"
