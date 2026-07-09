@@ -22,6 +22,9 @@ function git-ticket {
 function git-prefix {
   get-root
   local git_ticket="$(git-ticket)"
+  if ! [[ -f "$CODE_ROOT/package.json" ]]; then
+    return
+  fi
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
 
   case $project_name in
