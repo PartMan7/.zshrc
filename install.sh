@@ -30,7 +30,6 @@ need_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
-need_cmd git
 need_cmd curl
 
 OS=$(uname -s)
@@ -88,9 +87,8 @@ linux_ensure_cmd() {
 }
 
 install_linux_deps() {
-  for cmd in git curl zsh; do
-    need_cmd "$cmd"
-  done
+  linux_ensure_cmd git git || die "required command not found: git"
+  linux_ensure_cmd zsh zsh || die "required command not found: zsh"
   linux_ensure_cmd grep grep || true
   linux_ensure_cmd sed sed || true
   linux_ensure_cmd awk gawk || true
@@ -105,6 +103,8 @@ if [ "$IS_MAC" -eq 1 ]; then
 elif [ "$IS_LINUX" -eq 1 ]; then
   install_linux_deps
 fi
+
+need_cmd git
 
 if [ -d "$PARTZSH/.git" ]; then
   if ! git -C "$PARTZSH" diff --quiet 2>/dev/null || ! git -C "$PARTZSH" diff --cached --quiet 2>/dev/null; then
@@ -159,7 +159,17 @@ ZSHRC="$HOME/.zshrc"
 SOURCE_LINE='source "$HOME/.partzsh/zshrc"'
 
 append_zshrc_marker() {
+  [ -n "${HOME:-}" ] || die "HOME is not set"
   if [ -f "$ZSHRC" ] && grep -qF "$MARKER_BEGIN" "$ZSHRC" 2>/dev/null; then
+    return 0
+  fi
+  if [ ! -f "$ZSHRC" ]; then
+    cat >"$ZSHRC" <<EOF
+$MARKER_BEGIN
+$SOURCE_LINE
+$MARKER_END
+EOF
+    echo "partzsh install: created $ZSHRC"
     return 0
   fi
   {
