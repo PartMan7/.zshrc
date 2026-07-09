@@ -38,35 +38,6 @@ function hts {
   cd "$CODE_ROOT/packages/spaceweb"
 }
 
-function wheeee {
-  get-root
-  if [[ "$1" == force ]]
-    then local force_wheeee=1
-    else local force_wheeee=0
-  fi
-  local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
-  case $project_name in
-    spaceweb)
-      htr
-      if [[ $force_wheeee -eq 1 ]]; then yarn build --scope=spaceweb-themes; fi
-      yarn docs:dev:only-spaceweb
-    ;;
-    sprinklr-app-client)
-      htw
-      if [[ $force_wheeee -eq 1 ]]
-      then
-        yarn prenext-dev
-        yarn prebuild
-      fi
-      yarn next-dev:only
-    ;;
-    *)
-      echo "Uhh no idea how to handle $project_name sorry"
-    ;;
-  esac
-}
-alias wheeeee='wheeee force'
-
 function space-up {
   local space_version="$1"
   if [ -z "$space_version" ]
