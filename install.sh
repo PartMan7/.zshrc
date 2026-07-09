@@ -47,11 +47,55 @@ install_mac_deps() {
     patchutils screen watch wdiff wget zip
 }
 
+linux_run_root() {
+  if [ "$(id -u)" -eq 0 ]; then
+    "$@"
+  elif command -v sudo >/dev/null 2>&1; then
+    sudo "$@"
+  else
+    return 1
+  fi
+}
+
+linux_pkg_install() {
+  if command -v apt-get >/dev/null 2>&1; then
+    linux_run_root apt-get update -qq && linux_run_root apt-get install -y "$@"
+  elif command -v dnf >/dev/null 2>&1; then
+    linux_run_root dnf install -y "$@"
+  elif command -v yum >/dev/null 2>&1; then
+    linux_run_root yum install -y "$@"
+  elif command -v pacman >/dev/null 2>&1; then
+    linux_run_root pacman -Sy --noconfirm "$@"
+  elif command -v apk >/dev/null 2>&1; then
+    linux_run_root apk add "$@"
+  else
+    return 1
+  fi
+}
+
+linux_ensure_cmd() {
+  cmd=$1
+  pkg=${2:-$1}
+  if command -v "$cmd" >/dev/null 2>&1; then
+    return 0
+  fi
+  echo "partzsh install: $cmd not found; trying to install $pkg..."
+  if linux_pkg_install "$pkg" && command -v "$cmd" >/dev/null 2>&1; then
+    return 0
+  fi
+  echo "partzsh install: warning: $cmd not available (install $pkg manually if needed)" >&2
+  return 1
+}
+
 install_linux_deps() {
-  for cmd in grep sed awk find parallel git curl zsh; do
-    command -v "$cmd" >/dev/null 2>&1 || die "required command not found on Linux: $cmd"
+  for cmd in git curl zsh; do
+    need_cmd "$cmd"
   done
-  # Verify GNU grep (ggrep alias target)
+  linux_ensure_cmd grep grep || true
+  linux_ensure_cmd sed sed || true
+  linux_ensure_cmd awk gawk || true
+  linux_ensure_cmd find findutils || true
+  linux_ensure_cmd parallel parallel || true
   grep --version 2>/dev/null | head -1 | grep -qi gnu || \
     echo "partzsh install: warning: grep may not be GNU; ggrep alias expects GNU grep" >&2
 }

@@ -5,6 +5,16 @@ alias gsed='sed'
 alias gawk='awk'
 alias gfind='find'
 
+if command -v parallel >/dev/null 2>&1; then
+  function color {
+    parallel -q --keep-order print -P
+  }
+else
+  function color {
+    cat
+  }
+fi
+
 alias ls="ls --color=auto"
 alias l="ls -laGh --color=auto"
 
