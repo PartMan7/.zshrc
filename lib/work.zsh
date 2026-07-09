@@ -6,6 +6,9 @@ alias yarn-ddos="yarn docs:dev:only-spaceweb"
 
 function git-ticket {
   get-root
+  if ! [[ -f "$CODE_ROOT/package.json" ]]; then
+    return
+  fi
   local project_name=$(jq '.name' "$CODE_ROOT/package.json" -r)
   case $project_name in
     spaceweb|sprinklr-app-client)
